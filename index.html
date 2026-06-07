@@ -2,371 +2,656 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>炸金花</title>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"><\/script>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-:root{--bg:#1a0a2e;--cb:#2d1b4e;--gd:#ffd700;--rd:#e74c3c;--gn:#27ae60;--bl:#3498db;--tx:#f0e6ff;--dm:#8b7da8}
-body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
-.pg{display:none;min-height:100vh;padding:16px;flex-direction:column;align-items:center}.pg.on{display:flex}
-.dc{background:rgba(231,76,60,.12);border:1px solid var(--rd);color:#ff6b6b;border-radius:8px;padding:8px;font-size:12px;text-align:center;margin:8px 0;width:100%;max-width:400px}
-.tt{font-size:28px;font-weight:bold;color:var(--gd);margin:20px 0 8px}
-.sb{color:var(--dm);font-size:13px;margin-bottom:14px}
-input{width:100%;max-width:320px;padding:11px 14px;border:2px solid #4a3070;border-radius:10px;background:var(--cb);color:var(--tx);font-size:16px;outline:none;margin:5px 0}input:focus{border-color:var(--gd)}
-.bt{padding:11px 22px;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;transition:all .15s;margin:5px;width:100%;max-width:320px}.bt:active{transform:scale(.96)}
-.bp{background:linear-gradient(135deg,#6c3483,#8e44ad);color:#fff}.bg{background:linear-gradient(135deg,#d4a017,#ffd700);color:#1a0a2e}
-.br{background:linear-gradient(135deg,#922b21,#c0392b);color:#fff}.bs{background:linear-gradient(135deg,#1e8449,#27ae60);color:#fff}
-.bm{padding:7px 12px;font-size:13px;max-width:none;margin:2px}.bt:disabled{opacity:.4;cursor:not-allowed;transform:none}
-.ld{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center}.ld.on{display:flex}
-.lt{color:var(--gd);font-size:18px;animation:lp 1s infinite}
-.hd{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:560px;padding:6px 0;border-bottom:1px solid #4a3070;margin-bottom:6px}
-.ri{font-size:16px;color:var(--gd);cursor:pointer}.pi{background:linear-gradient(135deg,#d4a017,#ffd700);color:#1a0a2e;padding:3px 10px;border-radius:16px;font-weight:bold;font-size:13px}
-.pa{display:flex;flex-wrap:wrap;gap:7px;justify-content:center;width:100%;max-width:560px;margin:6px 0}
-.pl{background:var(--cb);border:2px solid #4a3070;border-radius:11px;padding:9px;min-width:72px;text-align:center;transition:all .3s}
-.pl.mt{border-color:var(--gd);box-shadow:0 0 14px rgba(255,215,0,.4);animation:pu 1.5s infinite}.pl.fl{opacity:.35}
-.pl.my .nm{color:var(--gd)}
-.nm{font-size:12px;font-weight:bold;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:72px}
-.sc{font-size:10px;color:var(--gn)}.st{font-size:9px;margin-top:1px}
-.st.lk{color:var(--bl)}.st.bd{color:var(--dm)}.st.fd{color:var(--rd)}
-.bb{font-size:9px;color:var(--gd);margin-top:1px}
-.ca{display:flex;gap:7px;justify-content:center;align-items:center;margin:8px 0;perspective:600px;flex-wrap:wrap}
-.cr{width:46px;height:68px;border-radius:7px;position:relative;transform-style:preserve-3d;transition:transform .5s;display:inline-block}
-.cr.fp{transform:rotateY(180deg)}
-.fr,.bk{position:absolute;width:100%;height:100%;border-radius:7px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.fr{background:#fff;transform:rotateY(180deg);border:2px solid #ddd}.fr.rd{color:var(--rd)}.fr.bk{color:#333}
-.rk{font-size:16px;font-weight:bold;line-height:1}.su{font-size:18px;line-height:1}
-.bk{background:linear-gradient(135deg,#4a3070,#6c3483);border:2px solid #8e44ad}.bk::after{content:'🂠';font-size:24px;opacity:.5}
-.ht{color:var(--gd);font-size:12px;font-weight:bold;margin-top:3px}
-.gi{background:var(--cb);border-radius:11px;padding:10px;width:100%;max-width:560px;text-align:center;margin:6px 0}
-.pv{font-size:18px;color:var(--gd);font-weight:bold}.bv{font-size:12px;color:var(--dm);margin-top:3px}.tv{font-size:12px;color:var(--bl);margin-top:1px}
-.ac{display:flex;flex-wrap:wrap;gap:4px;justify-content:center;width:100%;max-width:560px;margin:6px 0;padding:6px}
-.ov{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}.ov.on{display:flex}
-.pn{background:var(--bg);border:2px solid var(--gd);border-radius:14px;padding:18px;text-align:center;max-width:380px;width:90%;max-height:80vh;overflow-y:auto}
-.pt{font-size:18px;color:var(--gd);margin-bottom:10px;font-weight:bold}
-.cl{display:flex;flex-direction:column;gap:5px;margin:10px 0}
-.ch{display:flex;justify-content:space-around;margin:14px 0}.chi{text-align:center}
-.chi .cn{font-size:13px;font-weight:bold;margin-bottom:6px}.chi .ct{font-size:12px;color:var(--gd);margin-top:4px}
-.cw{font-size:15px;color:var(--gn);font-weight:bold;margin-top:6px}.cls{opacity:.4}
-.ec{margin:14px 0;text-align:left}
-.ei{display:flex;align-items:center;gap:6px;padding:6px;border-bottom:1px solid #4a3070;margin:3px 0;border-radius:7px}.ei.fdi{opacity:.35}
-.en{width:62px;font-size:12px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ecs{display:flex;gap:2px}.es{font-size:11px;padding:1px 3px;border-radius:3px;background:#fff;min-width:24px;text-align:center}.es.rd{color:var(--rd)}.es.bk{color:#333}
-.et{font-size:10px;color:var(--gd);margin-left:auto}
-.cp{width:100%;max-width:560px;background:var(--cb);border-radius:11px;margin:6px 0;overflow:hidden}
-.cpt{padding:6px 10px;background:rgba(255,255,255,.05);font-size:12px;font-weight:bold;cursor:pointer;display:flex;justify-content:space-between}
-.cpm{max-height:140px;overflow-y:auto;padding:6px 10px;font-size:12px}.cpm:empty::after{content:'暂无消息';color:var(--dm);display:block;text-align:center;padding:6px}
-.cm{margin:2px 0}.cm .cc{color:var(--bl);font-weight:bold}
-.cpi{display:flex;gap:5px;padding:6px}.cpi input{flex:1;margin:0;max-width:none}.cpi .bt{max-width:50px;margin:0}
-.sp{width:100%;max-width:380px;background:var(--cb);border-radius:11px;padding:14px;margin:6px 0}
-.sp h3{color:var(--gd);margin-bottom:6px;font-size:14px}.sp p{color:var(--dm);font-size:11px;line-height:1.4;margin:3px 0}.sp a{color:var(--bl)}
-.stp{margin:6px 0;padding:6px;border-left:3px solid var(--gd);padding-left:10px}.stp b{color:var(--gd)}
-.iv{background:var(--cb);border:2px dashed var(--gd);border-radius:9px;padding:10px;color:var(--gd);cursor:pointer;font-size:13px;max-width:310px;width:100%;margin:6px 0}.iv:hover{background:rgba(255,215,0,.1)}
-.lb{position:fixed;top:6px;right:6px;z-index:50;background:#c0392b;color:#fff;border:none;border-radius:7px;padding:5px 10px;font-size:11px;cursor:pointer}
-@keyframes pu{0%,100%{box-shadow:0 0 10px rgba(255,215,0,.3)}50%{box-shadow:0 0 22px rgba(255,215,0,.6)}}
-@keyframes lp{0%,100%{opacity:1}50%{opacity:.4}}
-@media(max-width:400px){.cr{width:38px;height:56px}.rk{font-size:13px}.su{font-size:15px}.pl{min-width:58px;padding:5px}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;min-height:100vh;overflow-x:hidden}
+.pg{display:none;flex-direction:column;align-items:center;padding:16px;max-width:480px;margin:0 auto;min-height:100vh}
+.pg.on{display:flex}
+.hd{text-align:center;margin:20px 0}
+.hd h1{font-size:2em;background:linear-gradient(90deg,#f7971e,#ffd200);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hd p{color:#aaa;font-size:.85em;margin-top:4px}
+.warn{color:#ff6b6b;font-size:.75em;text-align:center;margin:8px 0}
+.ipt{width:100%;padding:12px 16px;border:2px solid #444;border-radius:12px;background:#1a1a2e;color:#fff;font-size:1em;outline:none;margin:8px 0}
+.ipt:focus{border-color:#f7971e}
+.bt{width:100%;padding:14px;border:none;border-radius:12px;font-size:1.05em;font-weight:700;cursor:pointer;margin:8px 0;transition:all .2s}
+.bt:active{transform:scale(.97)}
+.bt:disabled{opacity:.4;cursor:not-allowed}
+.bg{background:linear-gradient(135deg,#f7971e,#ffd200);color:#000}
+.br{background:linear-gradient(135deg,#7f5af0,#2cb67d);color:#fff}
+.bs{background:linear-gradient(135deg,#e63946,#ff6b6b);color:#fff}
+.bl{background:linear-gradient(135deg,#2196f3,#64b5f6);color:#fff}
+.bx{background:transparent;border:2px solid #555;color:#aaa}
+.bdg{background:linear-gradient(135deg,#f7971e,#ffd200);color:#000;font-size:.7em;padding:3px 8px;border-radius:8px}
+.row{display:flex;gap:8px;width:100%}
+.row .bt{flex:1}
+.rm{font-size:.9em;color:#aaa;margin-top:12px;text-align:center}
+.pi{display:flex;gap:10px;width:100%;margin:6px 0}
+.pi .ipt{flex:1;margin:0}
+.pi .bt{width:auto;padding:12px 20px;margin:0;white-space:nowrap}
+.si{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1a1a2e;border-radius:10px;margin:6px 0}
+.si .sn{display:flex;align-items:center;gap:8px}
+.si .dot{width:8px;height:8px;border-radius:50%;background:#2cb67d}
+.si .dot.off{background:#555}
+.si .amt{color:#ffd200;font-weight:700}
+.pots{width:100%;text-align:center;padding:16px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;margin:10px 0}
+.pots .lb{color:#aaa;font-size:.85em}
+.pots .vl{font-size:2em;font-weight:700;color:#ffd200}
+.pots .st{color:#aaa;font-size:.8em;margin-top:4px}
+.acts{width:100%;margin:10px 0}
+.acts .ro{display:flex;gap:8px;margin:6px 0}
+.acts .bt{margin:0}
+.cards{display:flex;gap:8px;margin:10px 0;justify-content:center}
+.cd{width:56px;height:80px;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;transition:all .3s}
+.cd.r{color:#e63946}
+.cd.b{color:#000}
+.cd.hid{background:linear-gradient(135deg,#2196f3,#1565c0);color:transparent;cursor:pointer}
+.cd.lg{font-size:1.3em}
+.cd.sm{font-size:.7em}
+.tmr{width:100%;height:6px;background:#1a1a2e;border-radius:3px;margin:6px 0;overflow:hidden}
+.tmr .bar{height:100%;background:linear-gradient(90deg,#2cb67d,#ffd200);border-radius:3px;transition:width 1s linear}
+.tmr.wrn .bar{background:linear-gradient(90deg,#e63946,#ff6b6b)}
+.chat{width:100%;background:#1a1a2e;border-radius:12px;margin:10px 0;overflow:hidden}
+.chat .ch{height:120px;overflow-y:auto;padding:8px 12px;font-size:.85em}
+.chat .cm{margin:3px 0}
+.chat .cn{color:#7f5af0;font-weight:700}
+.chat .ci{display:flex;gap:6px;padding:8px}
+.chat .ci .ipt{flex:1;margin:0;padding:8px 12px;font-size:.85em}
+.chat .ci .bt{width:auto;padding:8px 14px;margin:0;font-size:.85em}
+.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.modal .mc{background:#1a1a2e;border-radius:16px;padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto}
+.modal .mc h3{text-align:center;margin-bottom:16px}
+.pick{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#16213e;border-radius:10px;margin:6px 0;cursor:pointer}
+.pick:hover{background:#243b55}
+.rst{width:100%;text-align:center;padding:16px}
+.rst .win{font-size:1.5em;color:#ffd200;font-weight:700}
+.rst .lose{font-size:1.2em;color:#ff6b6b}
+.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:10px;z-index:200;font-size:.9em;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+.cprw{width:100%;display:flex;gap:8px;margin:8px 0}
+.cprw .ipt{flex:1;margin:0;font-size:.85em}
+.cprw .bt{width:auto;padding:10px 16px;margin:0;white-space:nowrap;font-size:.85em}
+.hcd{display:flex;gap:4px;justify-content:center;margin:6px 0}
+.hcd .mc2{width:30px;height:42px;border-radius:4px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.6em}
+.hcd .mc2.r{color:#e63946}
+.hcd .mc2.b{color:#000}
+.hcd .mc2.hid{background:linear-gradient(135deg,#1565c0,#2196f3)}
+.dead{opacity:.4;pointer-events:none}
+@media(max-width:380px){.cd{width:48px;height:68px}.cd.lg{font-size:1.1em}.cd.sm{font-size:.6em}}
 </style>
 </head>
 <body>
-<div class="ld" id="ld"><div class="lt">连接中...</div></div>
-<div id="pg0" class="pg on">
-<div class="tt">🃏 炸金花</div>
-<div class="sb">好友娱乐专属</div>
-<div class="dc">⚠️ 仅供娱乐，禁止赌博!</div>
-<input id="i0" placeholder="输入昵称" maxlength="10" autofocus>
-<button class="bt bg" onclick="go()">进入大厅</button>
-<div class="sp" id="setup" style="display:none;border:2px solid var(--ac);box-shadow:0 0 15px rgba(255,107,53,0.3)">
-<h3>🔧 配置 Firebase</h3>
-<p>免费实时通信，<b>永久免费</b>，无需绑卡</p>
-<div class="stp"><b>1</b>:打开<a href="https://console.firebase.google.com" target="_blank">Firebase控制台</a>，Google登录</div>
-<div class="stp"><b>2</b>:创建项目→名称随意→确认</div>
-<div class="stp"><b>3</b>:Build→Realtime Database→创建→测试模式→启用</div>
-<div class="stp"><b>4</b>:⚙项目设置→添加Web应用(</>)→复制firebaseConfig</div>
-<div class="stp"><b>5</b>:点下方「📋粘贴」→检查→💾保存</div>
-<button class="bt bg bm" onclick="paste()">📋 自动粘贴</button>
-<input id="f0" placeholder="apiKey"><input id="f1" placeholder="authDomain"><input id="f2" placeholder="databaseURL(必填!)"><input id="f3" placeholder="projectId"><input id="f4" placeholder="storageBucket"><input id="f5" placeholder="messagingSenderId"><input id="f6" placeholder="appId">
-<button class="bt bp bm" onclick="cfg()">💾 保存</button>
-</div></div>
-<div id="pg1" class="pg">
-<div class="tt">🃏 炸金花</div>
-<div class="dc">⚠️ 仅供娱乐，禁止赌博!</div>
-<div style="width:100%;max-width:320px;margin-top:14px">
-<h3 style="color:var(--gd);margin-bottom:6px">创建房间</h3>
-<input id="i1" type="number" placeholder="底注5-100(默认10)" min="5" max="100">
-<button class="bt bg" onclick="mk()">创建房间</button></div>
-<div style="width:100%;max-width:320px;margin-top:16px">
-<h3 style="color:var(--gd);margin-bottom:6px">加入房间</h3>
-<input id="i2" placeholder="6位房间号" maxlength="6">
-<button class="bt bp" onclick="jn()">加入房间</button></div>
-<button class="bt br bm" style="margin-top:16px;max-width:180px" onclick="rst()">重置Firebase配置</button></div>
-<div id="pg2" class="pg">
-<button class="lb" onclick="lv()">✕ 离开</button>
-<div class="hd"><div class="ri" id="x0" onclick="cr()">------</div><div class="pi" id="x1">1000分</div></div>
-<div class="pa" id="x2"></div>
-<div class="ca" id="x3"></div>
-<div class="gi"><div class="pv" id="x4">💰 0</div><div class="bv" id="x5">注额: 0</div><div class="tv" id="x6"></div></div>
-<div class="ac" id="x7"></div>
-<div class="iv" onclick="ci()">🔗 复制邀请链接</div>
-<div class="cp"><div class="cpt" onclick="tc()"><span>💬 聊天</span><span id="x8">▼</span></div><div class="cpm" id="x9" style="display:none"></div><div class="cpi" id="xa" style="display:none"><input id="xb" placeholder="说话..." maxlength="200" onkeydown="if(event.key==='Enter')sc()"><button class="bt bp bm" onclick="sc()">发</button></div></div>
-<div class="dc" style="margin-top:auto">⚠️ 仅供娱乐，禁止赌博!</div></div>
-<div class="ov" id="o0"><div class="pn"><div class="pt">⚔️ 选择比牌对手</div><div class="cl" id="y0"></div><button class="bt br bm" onclick="xo('o0')">取消</button></div></div>
-<div class="ov" id="o1"><div class="pn"><div class="pt">⚔️ 比牌结果</div><div class="ch" id="y1"></div><div id="y2"></div><button class="bt bp bm" style="margin-top:10px" onclick="xo('o1')">确定</button></div></div>
-<div class="ov" id="o2"><div class="pn"><div class="pt">🏆 本局结束</div><div id="y3"></div><div id="y4"></div><div class="ec" id="y5"></div><button class="bt bg" style="margin-top:10px" onclick="xo('o2')">确定</button></div></div>
+<!-- 首页 -->
+<div class="pg on" id="home">
+  <div class="hd"><h1>🃏 炸金花</h1><p>好友娱乐专属</p></div>
+  <div class="warn">⚠️ 仅供娱乐，禁止赌博!</div>
+  <input class="ipt" id="i0" placeholder="输入昵称" maxlength="10" autofocus>
+  <div class="rm">创建房间 — 你将自动成为房主</div>
+  <button class="bt bg" onclick="createRoom()">创建房间</button>
+  <div class="rm">加入房间 — 输入6位房间号</div>
+  <div class="pi">
+    <input class="ipt" id="i2" placeholder="房间号" maxlength="6" inputmode="numeric">
+    <button class="bt bl" onclick="joinRoom()">加入</button>
+  </div>
+  <div class="warn" style="margin-top:40px">⚠️ 仅供娱乐，禁止赌博!</div>
+</div>
 
+<!-- 大厅/游戏 -->
+<div class="pg" id="lobby">
+  <div class="hd"><h1>🃏 炸金花</h1></div>
+  <div class="warn">⚠️ 仅供娱乐，禁止赌博!</div>
+  <div class="rm" id="roomInfo">房间: ------</div>
+  <div class="cprw">
+    <input class="ipt" id="roomLink" readonly>
+    <button class="bt bg" onclick="copyLink()">复制链接</button>
+  </div>
+  <div style="width:100%;margin:10px 0">
+    <div style="color:#aaa;font-size:.85em;margin-bottom:6px">玩家 (<span id="pCount">0</span>/6)</div>
+    <div id="playerList"></div>
+  </div>
+  <div id="gameUI" style="display:none;width:100%">
+    <div class="pots">
+      <div class="lb">奖池</div>
+      <div class="vl" id="potVal">0</div>
+      <div class="st">当前注额: <span id="curBet">5</span> | 你的筹码: <span id="myChips">0</span></div>
+    </div>
+    <div class="tmr" id="timerBar"><div class="bar" id="timerFill" style="width:100%"></div></div>
+    <div style="text-align:center;margin:8px 0">
+      <div style="color:#aaa;font-size:.8em" id="handLabel">你的手牌 (点击看牌)</div>
+      <div class="cards" id="myCards"></div>
+    </div>
+    <div class="acts" id="actionBtns" style="display:none">
+      <div class="ro">
+        <button class="bt bl" onclick="doLook()" id="btnLook">👀 看牌</button>
+        <button class="bt bg" onclick="doCall()" id="btnCall">跟注</button>
+      </div>
+      <div class="ro">
+        <button class="bt br" onclick="doRaise()" id="btnRaise">⬆️ 加注</button>
+        <button class="bt bs" onclick="doCompare()" id="btnCmp">⚔️ 比牌</button>
+      </div>
+      <div class="ro">
+        <button class="bt bx" onclick="doFold()">🏳️ 弃牌</button>
+      </div>
+    </div>
+    <div class="chat">
+      <div class="ch" id="chatBox"></div>
+      <div class="ci">
+        <input class="ipt" id="chatIn" placeholder="说点什么..." onkeydown="if(event.key==='Enter')sendChat()">
+        <button class="bt bx" onclick="sendChat()">发</button>
+      </div>
+    </div>
+  </div>
+  <div id="waitStart" style="display:none;width:100%;text-align:center;padding:20px">
+    <div style="color:#aaa;margin:10px 0">等待房主开始游戏...</div>
+  </div>
+  <div id="hostCtrl" style="width:100%;margin:10px 0;display:none">
+    <button class="bt bg" onclick="startGame()">🚀 开始游戏</button>
+  </div>
+</div>
 
-<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script async src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<script>
-"use strict";
-var _fbReady=false,_fbFail=false;
-function loadFB(cb){
-  if(_fbReady){cb();return}
-  if(typeof firebase!=='undefined'&&firebase.initializeApp){_fbReady=true;cb();return}
-  var s1=document.createElement('script');
-  s1.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js';
-  s1.onerror=function(){_fbFail=true;lc();alert('Firebase SDK加载失败!\n\n可能原因:gstatic.com被拦截\n解决方案:\n1.开VPN后刷新\n2.换DNS为8.8.8.8\n3.让我改用国内方案')};
-  s1.onload=function(){
-    var s2=document.createElement('script');
-    s2.src='https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js';
-    s2.onerror=function(){_fbFail=true;lc();alert('Firebase Database SDK加载失败!')};
-    s2.onload=function(){_fbReady=true;cb()};
-    document.head.appendChild(s2);
-  };
-  document.head.appendChild(s1);
-  lo('加载Firebase中...');
-}
+<!-- 弹窗 -->
+<div class="modal" id="cmpModal">
+  <div class="mc">
+    <h3>⚔️ 选择比牌对手</h3>
+    <div id="cmpPicks"></div>
+    <button class="bt bx" onclick="closeCmpModal()">取消</button>
+  </div>
+</div>
+<div class="modal" id="cmpResult">
+  <div class="mc">
+    <h3>⚔️ 比牌结果</h3>
+    <div class="rst" id="cmpResContent"></div>
+    <button class="bt bx" onclick="closeCmpResult()">确定</button>
+  </div>
+</div>
+<div class="modal" id="roundEnd">
+  <div class="mc">
+    <h3>🏆 本局结束</h3>
+    <div class="rst" id="roundResContent"></div>
+    <div id="roundCards" style="margin:12px 0"></div>
+    <button class="bt bg" onclick="nextRound()">下一局</button>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
 
-var SU=['♠','♥','♦','♣'],RK=['2','3','4','5','6','7','8','9','10','J','Q','K','A'],VL={};
-RK.forEach(function(r,i){VL[r]=i+2});
-var MP=6,IP=1E3,DA=10,XB=200,XT=30;
-var mid=uid(16),myn='',cR=null,rR=null,rS=null,db=null,ok=false,ht=null,rl=null,_cl=null,_lck='';
+<script>"use strict";
+var RK=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+var SU=['♠','♥','♦','♣'];
+var ANTE=5,PX=6,TSEC=45,WSEC=30;
+var peer=null,conns={},isH=false;
+var myId='',myN='',rCode='';
+var tmr=null,tLeft=0;
+var G=null;
 
 function uid(n){var s='',c='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';for(var i=0;i<n;i++)s+=c[Math.floor(Math.random()*c.length)];return s}
 function xe(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML}
-function pg(i){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById('pg'+i).classList.add('on')}
-function lo(m){document.getElementById('ld').querySelector('.lt').textContent=m||'';document.getElementById('ld').classList.add('on')}
-function lc(){document.getElementById('ld').classList.remove('on')}
-function so(i){document.getElementById(i).classList.add('on')}
-function xo(i){document.getElementById(i).classList.remove('on')}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');setTimeout(function(){t.classList.remove('show')},2500)}
+function pg(id){document.querySelectorAll('.pg').forEach(function(p){p.classList.remove('on')});document.getElementById(id).classList.add('on')}
+function mh(){return myId===(G?G.host:myId)}
+function isRed(c){return c.s==='♥'||c.s==='♦'}
 
-function mkDk(){var d=[];for(var i=0;i<SU.length;i++)for(var j=0;j<RK.length;j++)d.push({s:SU[i],r:RK[j],v:VL[RK[j]]});return d}
-function shf(dk,sd){var d=dk.slice(),s=sd;function nx(){s=(s*1103515245+12345)&0x7fffffff;return s/0x7fffffff}for(var i=d.length-1;i>0;i--){var j=Math.floor(nx()*(i+1)),t=d[i];d[i]=d[j];d[j]=t}return d}
-
-function evH(cs){
-  var o=cs.slice().sort(function(a,b){return b.v-a.v}),vs=o.map(function(c){return c.v}),ss=o.map(function(c){return c.s});
-  var fl=ss[0]===ss[1]&&ss[1]===ss[2],std=false,hi=vs[0];
-  if(vs[0]-vs[1]===1&&vs[1]-vs[2]===1){std=true;hi=vs[0]}
-  else if(vs[0]===14&&vs[1]===3&&vs[2]===2){std=true;hi=3}
-  var tri=vs[0]===vs[1]&&vs[1]===vs[2];
-  var pr=false,pv=0,kk=0;
-  if(vs[0]===vs[1]){pr=true;pv=vs[0];kk=vs[2]}
-  else if(vs[1]===vs[2]){pr=true;pv=vs[1];kk=vs[0]}
-  var t,tp,cv;
-  if(tri){t=6;tp='豹子';cv=[vs[0]]}
-  else if(fl&&std){t=5;tp='同花顺';cv=[hi]}
-  else if(fl){t=4;tp='同花';cv=vs}
-  else if(std){t=3;tp='顺子';cv=[hi]}
-  else if(pr){t=2;tp='对子';cv=[pv,kk]}
-  else{t=1;tp='散牌';cv=vs}
-  return{t:t,tp:tp,cv:cv}
-}
-function cmH(a,b){var h1=evH(a),h2=evH(b);if(h1.t!==h2.t)return h1.t>h2.t?1:-1;for(var i=0;i<Math.min(h1.cv.length,h2.cv.length);i++){if(h1.cv[i]!==h2.cv[i])return h1.cv[i]>h2.cv[i]?1:-1}return-1}
-function h2s(c){return c.map(function(x){return x.s+x.r}).join('')}
-function s2h(s){var c=[];for(var i=0;i<s.length;i+=3)c.push({s:s[i],r:s.substring(i+1,i+3),v:VL[s.substring(i+1,i+3)]});return c}
-function cc(s){return s==='♥'||s==='♦'?'rd':'bk'}
-
-function gc(){try{var c=localStorage.getItem('zjh');return c?JSON.parse(c):null}catch(e){return null}}
-function cfg(){
-  var ks=['apiKey','authDomain','databaseURL','projectId','storageBucket','messagingSenderId','appId'],o={},g=true;
-  ks.forEach(function(k,i){o[k]=document.getElementById('f'+i).value.trim();if((i===0||i===2)&&!o[k])g=false});
-  if(!g){alert('apiKey和databaseURL必填!');return}
-  localStorage.setItem('zjh',JSON.stringify(o));alert('✅已保存!');ini(o)
-}
-function paste(){
-  navigator.clipboard.readText().then(function(t){
-    try{var c=t.replace(/^.*?firebaseConfig\s*=\s*/i,'').replace(/;$/,'').trim();
-    if(c[0]==='{'){c=c.replace(/(\w+)\s*:/g,'"$$1":').replace(/'/g,'"');var o=JSON.parse(c);
-    var ks=['apiKey','authDomain','databaseURL','projectId','storageBucket','messagingSenderId','appId'];
-    ks.forEach(function(k,i){if(o[k])document.getElementById('f'+i).value=o[k]});
-    alert('✅已填充!自查后💾保存');return}}catch(e){}alert('❌无法解析，手动填')
-  }).catch(function(){alert('❌无法读取粘贴板')})
-}
-function rst(){if(confirm('确定重置?')){localStorage.removeItem('zjh');location.reload()}}
-function ini(o){
-  try{if(!_fbReady||typeof firebase==='undefined'){lc();alert('Firebase未加载完成，请稍候再试');return false}if(firebase.apps.length)firebase.apps.forEach(function(a){a.delete()});firebase.initializeApp(o);db=firebase.database();ok=true;
-  document.getElementById('setup').style.display='none';pg(1);return true}catch(e){alert('Firebase连接失败:\n'+e.message+'\n\n请检查配置是否正确');return false}
-}
-function go(){myn=document.getElementById('i0').value.trim()||'匿名';if(_fbFail){lc();alert('Firebase加载失败，请刷新或开VPN');return}if(_fbReady){var c=gc();if(c&&c.apiKey&&c.databaseURL){ini(c)}else{document.getElementById('setup').style.display='block';document.getElementById('setup').scrollIntoView({behavior:'smooth'})}}else{loadFB(function(){lc();var c=gc();if(c&&c.apiKey&&c.databaseURL){ini(c)}else{document.getElementById('setup').style.display='block';document.getElementById('setup').scrollIntoView({behavior:'smooth'})}})} }
-
-function op(rm){return Object.entries(rm.p).filter(function(e){return e[1].on}).sort(function(a,b){return a[1].la-b[1].la||a[0].localeCompare(b[0])}).map(function(e){return e[0]})}
-function pv(rm){return rm.p?Object.values(rm.p):[]}
-function im(rm){if(!rm||!rm.gs)return-1;var ps=op(rm),i=ps.indexOf(mid);return i===rm.ci?i:-1}
-function np(rm,ci){var ps=op(rm),n=(ci+1)%ps.length,t=0;while((rm.p[ps[n]].fd||!rm.p[ps[n]].on)&&t<ps.length){n=(n+1)%ps.length;t++}return n}
-
-function mk(){
-  if(!ok){alert('请先配置Firebase');return}
-  var a=Math.max(5,Math.min(100,parseInt(document.getElementById('i1').value)||DA));
-  var id=String(Math.floor(1E5+Math.random()*9E5)),sd=Date.now();
-  var d={id:id,host:mid,ante:a,p:{},gs:false,pot:0,cb:0,ci:-1,tc:0,ds:sd,chat:{},ca:Date.now()};
-  d.p[mid]={id:mid,nm:myn,pts:IP,cd:'',lk:false,fd:false,tb:0,on:true,la:Date.now()};
-  lo('创建中...');db.ref('rooms/'+id).set(d).then(function(){cR=id;pg(2);lr(id);sp(id);lc()}).catch(function(e){lc();alert('失败:'+e.message)})
-}
-function jn(){
-  if(!ok){alert('请先配置Firebase');return}
-  var r=document.getElementById('i2').value.trim();
-  if(!/^\d{6}$/.test(r)){alert('6位数字房间号');return}
-  lo('加入中...');db.ref('rooms/'+r).once('value').then(function(sn){
-    var rm=sn.val();if(!rm){lc();alert('不存在');return}if(rm.gs){lc();alert('游戏中');return}
-    var ids=rm.p?Object.keys(rm.p):[];if(ids.length>=MP){lc();alert('已满');return}
-    if(rm.p&&rm.p[mid]){lc();cR=r;pg(2);lr(r);sp(r);return}
-    var pd={id:mid,nm:myn,pts:IP,cd:'',lk:false,fd:false,tb:0,on:true,la:Date.now()};
-    return db.ref('rooms/'+r+'/p/'+mid).set(pd).then(function(){cR=r;pg(2);lr(r);sp(r);lc();sm(myn+'加入房间')})
-  }).catch(function(e){lc();alert('失败:'+e.message)})
-}
-function lv(){
-  if(!cR||!db)return;sl();sr();
-  db.ref('rooms/'+cR+'/p/'+mid).once('value').then(function(sn){
-    if(!sn.val()){cR=null;rS=null;pg(1);return}
-    if(rS&&rS.gs){db.ref('rooms/'+cR+'/p/'+mid).update({fd:true,on:false});ce()}
-    else{db.ref('rooms/'+cR+'/p/'+mid).remove();
-      if(rS){var o=Object.keys(rS.p).filter(function(x){return x!==mid});if(!o.length)db.ref('rooms/'+cR).remove();else if(rS.host===mid)db.ref('rooms/'+cR+'/host').set(o[0])}}
-    cR=null;rS=null;pg(1)
-  })
+// ===== PeerJS =====
+function initPeer(peerId,callback){
+  peer=new Peer(peerId,{debug:0});
+  peer.on('open',function(id){
+    myId=id;
+    console.log('Peer open:',id);
+    if(callback)callback();
+  });
+  peer.on('connection',function(cn){
+    cn.on('open',function(){conns[cn.peer]=cn});
+    cn.on('data',function(d){onMsg(d,cn.peer)});
+    cn.on('close',function(){onDC(cn.peer)});
+  });
+  peer.on('error',function(e){
+    console.error('Peer err:',e);
+    if(e.type==='unavailable-id'){
+      toast('房间号已被占用，请重试');
+    }else{
+      toast('连接错误: '+e.type);
+    }
+  });
 }
 
-function lr(id){
-  sl();rR=db.ref('rooms/'+id);
-  rl=rR.on('value',function(sn){var d=sn.val();if(!d){cR=null;rS=null;pg(1);alert('房间已解散');return}rS=d;rn(d)});
-  _cl=db.ref('rooms/'+id+'/chat').orderByChild('t').limitToLast(50).on('value',function(sn){
-    var ms=sn.val(),el=document.getElementById('x9');if(!ms)return;var h='';
-    Object.values(ms).sort(function(a,b){return a.t-b.t}).forEach(function(m){
-      h+=m.sy?'<div class="cm" style="color:var(--gd)">📢 '+xe(m.tx)+'</div>':'<div class="cm"><span class="cc">'+xe(m.n)+':</span> '+xe(m.tx)+'</div>'});
-    el.innerHTML=h;el.scrollTop=el.scrollHeight})
-}
-function sl(){if(rR&&rl){rR.off('value',rl);rl=null}if(cR&&_cl){db.ref('rooms/'+cR+'/chat').off('value',_cl);_cl=null}rR=null}
-function sp(id){sr();var p=db.ref('rooms/'+id+'/p/'+mid);ht=setInterval(function(){p.update({on:true,la:Date.now()})},1E4);p.update({on:true,la:Date.now()});window.addEventListener('beforeunload',bu)}
-function bu(){if(cR&&db)db.ref('rooms/'+cR+'/p/'+mid).update({on:false})}
-function sr(){if(ht){clearInterval(ht);ht=null}window.removeEventListener('beforeunload',bu)}
-function sm(tx){if(cR&&db)db.ref('rooms/'+cR+'/chat').push({n:'',tx:tx,t:Date.now(),sy:true})}
-
-function ce(){if(!cR||!db)return;db.ref('rooms/'+cR).once('value').then(function(sn){var rm=sn.val();if(!rm||!rm.gs)return;var ac=pv(rm).filter(function(p){return!p.fd&&p.on});if(ac.length<=1)de(rm,ac);else if(rm.tc>=XT)df(rm)})}
-function de(rm,ac){if(!cR)return;var w=ac&&ac[0]||null,u={};if(w)u['p/'+w.id+'/pts']=w.pts+rm.pot;u.gs=false;u.pot=0;u.ci=-1;u.tc=0;u.cb=0;u.lc=null;if(rm.p)Object.keys(rm.p).forEach(function(id){u['p/'+id+'/cd']='';u['p/'+id+'/lk']=false;u['p/'+id+'/fd']=false;u['p/'+id+'/tb']=0});db.ref('rooms/'+cR).update(u);if(w)sm('🎉 '+w.nm+'获胜! 获'+rm.pot+'分')}
-function df(rm){if(!cR)return;var ac=pv(rm).filter(function(p){return!p.fd&&p.on});if(ac.length<=1){de(rm,ac);return}var b=ac[0];for(var i=1;i<ac.length;i++){if(cmH(s2h(ac[i].cd),s2h(b.cd))>0)b=ac[i]}var u={pot:0,gs:false,ci:-1,tc:0,cb:0,lc:null};u['p/'+b.id+'/pts']=b.pts+rm.pot;if(rm.p)Object.keys(rm.p).forEach(function(id){u['p/'+id+'/cd']='';u['p/'+id+'/lk']=false;u['p/'+id+'/fd']=false;u['p/'+id+'/tb']=0});db.ref('rooms/'+cR).update(u);sm('🏆摊牌! '+b.nm+'获胜!')}
-
-function sg(){
-  if(!rS||rS.host!==mid)return;if(!cR)return;
-  var on=pv(rS).filter(function(p){return p.on&&p.pts>0});if(on.length<2){alert('至少2人有积分');return}
-  var sd=Date.now(),dk=shf(mkDk(),sd),ps={},pot=0,ix=0,pids=[];
-  Object.entries(rS.p).forEach(function(e){var pid=e[0],p=e[1];
-    if(!p.on||p.pts<=0){ps[pid]=Object.assign({},p,{fd:true,on:false});return}
-    var cd=[dk[ix*3],dk[ix*3+1],dk[ix*3+2]],ante=Math.min(rS.ante,p.pts);
-    ps[pid]={id:pid,nm:p.nm,pts:p.pts-ante,cd:h2s(cd),lk:false,fd:false,tb:ante,on:true,la:Date.now()};pot+=ante;pids.push(pid);ix++});
-  var hi=pids.indexOf(rS.host),ni=(hi>=0?(hi+1):0)%pids.length;
-  db.ref('rooms/'+cR).update({gs:true,pot:pot,cb:rS.ante,ci:ni,tc:0,ds:sd,p:ps});sm('游戏开始! 底注已扣')
+function connTo(hid){
+  var cn=peer.connect(hid,{reliable:true});
+  cn.on('open',function(){conns[hid]=cn});
+  cn.on('data',function(d){onMsg(d,cn.peer)});
+  cn.on('close',function(){onDC(cn.peer)});
 }
 
-function dl(){if(!rS||!rS.gs)return;var m=rS.p[mid];if(!m||m.fd||m.lk)return;db.ref('rooms/'+cR+'/p/'+mid+'/lk').set(true);sm(myn+'看了牌')}
-function dc(){
-  if(!rS||!rS.gs)return;var rm=rS,me=rm.p[mid];if(!me||me.fd)return;var pi=im(rm);if(pi<0)return;
-  var co=me.lk?rm.cb*2:rm.cb;if(me.pts<co){alert('积分不足');return}
-  var u={};u['p/'+mid+'/pts']=me.pts-co;u['p/'+mid+'/tb']=me.tb+co;u.pot=rm.pot+co;u.ci=np(rm,pi);u.tc=rm.tc+1;u.lc=null;
-  db.ref('rooms/'+cR).update(u);sm(myn+'跟注'+co+'分')
-}
-function dr(){
-  if(!rS||!rS.gs)return;var rm=rS,me=rm.p[mid];if(!me||me.fd)return;var pi=im(rm);if(pi<0)return;
-  var nb=Math.min(rm.cb*2,XB);if(nb===rm.cb){alert('已达最大注');return}
-  var co=me.lk?nb*2:nb;if(me.pts<co){alert('积分不足');return}
-  var u={};u['p/'+mid+'/pts']=me.pts-co;u['p/'+mid+'/tb']=me.tb+co;u.pot=rm.pot+co;u.cb=nb;u.ci=np(rm,pi);u.tc=rm.tc+1;u.lc=null;
-  db.ref('rooms/'+cR).update(u);sm(myn+'加注! 注额'+nb)
-}
-function df2(){
-  if(!rS||!rS.gs)return;var rm=rS,me=rm.p[mid];if(!me||me.fd)return;var pi=im(rm);if(pi<0)return;
-  var u={};u['p/'+mid+'/fd']=true;u.ci=np(rm,pi);u.tc=rm.tc+1;u.lc=null;
-  db.ref('rooms/'+cR).update(u).then(function(){ce()});sm(myn+'弃牌')
-}
-function ic(){
-  if(!rS||!rS.gs)return;var me=rS.p[mid];if(!me||me.fd)return;if(im(rS)<0)return;
-  var h='';Object.entries(rS.p).forEach(function(e){var pid=e[0],p=e[1];
-    if(pid!==mid&&!p.fd&&p.on)h+='<button class="bt bp bm" onclick="xc(\''+pid+'\')">'+xe(p.nm)+(p.lk?' 👁':' 🙈')+'</button>'});
-  if(!h){alert('无可比对手');return}document.getElementById('y0').innerHTML=h;so('o0')
-}
-function xc(tid){
-  if(!rS||!rS.gs)return;var rm=rS,me=rm.p[mid],tg=rm.p[tid];
-  if(!me||me.fd||!tg||tg.fd||!tg.on||tid===mid)return;var pi=im(rm);if(pi<0)return;
-  var co=me.lk?rm.cb*2:rm.cb;if(me.pts<co){alert('积分不足');return}
-  var mc=s2h(me.cd),tc=s2h(tg.cd),rs=cmH(mc,tc),lid,wid;
-  if(rs>0){lid=tid;wid=mid}else{lid=mid;wid=tid}
-  var u={};u['p/'+mid+'/pts']=me.pts-co;u['p/'+mid+'/tb']=me.tb+co;u.pot=rm.pot+co;u['p/'+lid+'/fd']=true;
-  u.ci=np(rm,pi);u.tc=rm.tc+1;
-  var ck=mid+'_'+tid+'_'+Date.now();
-  u.lc={ch:{id:mid,nm:myn,cd:me.cd,hd:evH(mc)},tg:{id:tid,nm:tg.nm,cd:tg.cd,hd:evH(tc)},wid:wid,tm:Date.now(),ck:ck};
-  db.ref('rooms/'+cR).update(u).then(function(){ce()});xo('o0')
-}
+function bcast(d){Object.values(conns).forEach(function(c){try{c.send(d)}catch(e){}})}
+function sto(pid,d){var c=conns[pid];if(c)try{c.send(d)}catch(e){}}
+function sHost(d){if(isH){onMsg(d,myId);return}var h=G?G.host:null;if(h&&conns[h])conns[h].send(d);else if(h===myId)onMsg(d,myId)}
 
-function tc(){var v=document.getElementById('x9').style.display!=='none';document.getElementById('x9').style.display=v?'none':'block';document.getElementById('xa').style.display=v?'none':'block';document.getElementById('x8').textContent=v?'▼':'▲'}
-function sc(){if(!cR||!db)return;var ip=document.getElementById('xb');var tx=ip.value.trim();if(!tx)return;db.ref('rooms/'+cR+'/chat').push({n:myn,tx:tx,t:Date.now(),sy:false});ip.value=''}
-function cr(){if(!cR)return;navigator.clipboard.writeText(cR).then(function(){alert('✅ 房间号: '+cR)}).catch(function(){})}
-function ci(){if(!cR)return;var u=location.href.split('?')[0]+'?r='+cR;navigator.clipboard.writeText(u).then(function(){alert('✅ 邀请链接已复制!')}).catch(function(){})}
-
-function mkC(c,u){if(u){var cl=cc(c.s);return '<div class="cr fp"><div class="fr '+cl+'"><div class="rk">'+xe(c.r)+'</div><div class="su">'+c.s+'</div></div><div class="bk"></div></div>'}return '<div class="cr"><div class="fr"></div><div class="bk"></div></div>'}
-function mnC(c){return '<span class="es '+cc(c.s)+'">'+c.s+xe(c.r)+'</span>'}
-
-function rn(rm){
-  document.getElementById('x0').textContent='房间: '+rm.id;
-  var me=rm.p[mid];
-  if(me)document.getElementById('x1').textContent=me.pts+'分';
-  document.getElementById('x4').textContent='💰 '+rm.pot;
-  document.getElementById('x5').textContent='注额: '+rm.cb;
-  var ps=op(rm),myi=im(rm);
-  if(rm.gs&&myi>=0){var tr=ps[rm.ci];document.getElementById('x6').textContent='轮到: '+(tr&&rm.p[tr]?rm.p[tr].nm:'')}
-  else document.getElementById('x6').textContent='';
-
-  var ph='';ps.forEach(function(pid){var p=rm.p[pid],cl='pl';if(pid===mid)cl+=' my';if(rm.gs&&pid===ps[rm.ci])cl+=' mt';if(p.fd)cl+=' fl';
-    var st=p.fd?'弃牌':p.lk?'已看牌':'暗牌',sc=p.fd?'fd':p.lk?'lk':'bd';
-    ph+='<div class="'+cl+'"><div class="nm">'+xe(p.nm)+'</div><div class="sc">'+p.pts+'分</div><div class="st '+sc+'">'+st+'</div>';
-    if(rm.gs&&p.tb>0)ph+='<div class="bb">下注'+p.tb+'</div>';
-    ph+='</div>'});
-  document.getElementById('x2').innerHTML=ph;
-
-  var ch='';
-  if(me&&me.cd){var cds=s2h(me.cd),sh=me.lk;cds.forEach(function(c){ch+=mkC(c,sh)});if(sh){var h=evH(cds);ch+='<div class="ht">'+h.tp+'</div>'}}
-  else if(rm.gs&&me&&!me.cd){ch='<div style="color:var(--dm);font-size:13px">等待发牌...</div>'}
-  document.getElementById('x3').innerHTML=ch;
-
-  var ah='';
-  if(!rm.gs){if(rm.host===mid)ah+='<button class="bt bg" onclick="sg()">🎮 开始游戏</button>';else ah+='<div style="color:var(--dm);font-size:13px">等待房主开始</div>'}
-  else if(myi>=0){var m=rm.p[mid];
-    ah+='<button class="bt bs" onclick="dl()"'+(m.lk?' disabled':'')+'>👁 看牌</button>';
-    ah+='<button class="bt bp" onclick="dc()">✓ 跟注'+(m.lk?rm.cb*2:rm.cb)+'</button>';
-    ah+='<button class="bt bg" onclick="dr()"'+(rm.cb>=XB?' disabled':'')+'>⬆ 加注</button>';
-    ah+='<button class="bt br" onclick="ic()">⚔ 比牌</button>';
-    ah+='<button class="bt br" onclick="df2()">✗ 弃牌</button>'}
-  else ah+='<div style="color:var(--dm);font-size:13px">等待操作...</div>';
-  document.getElementById('x7').innerHTML=ah;
-
-  if(rm.lc&&rm.lc.ck&&rm.lc.ck!==_lck){
-    _lck=rm.lc.ck;var lc=rm.lc;
-    var chc=s2h(lc.ch.cd),tgc=s2h(lc.tg.cd);
-    var chh=evH(chc),tgh=evH(tgc);
-    var hh='<div class="chi'+(lc.wid!==lc.ch.id?' cls':'')+'"><div class="cn">'+xe(lc.ch.nm)+'</div>';
-    chc.forEach(function(c){hh+=mkC(c,true)});
-    hh+='<div class="ct">'+chh.tp+'</div></div>';
-    hh+='<div class="chi'+(lc.wid!==lc.tg.id?' cls':'')+'"><div class="cn">'+xe(lc.tg.nm)+'</div>';
-    tgc.forEach(function(c){hh+=mkC(c,true)});
-    hh+='<div class="ct">'+tgh.tp+'</div></div>';
-    document.getElementById('y1').innerHTML=hh;
-    var wn=lc.wid===mid?'你赢了! 🎉':(lc.ch.id===mid||lc.tg.id===mid)?'你输了 😢':lc.wid===lc.ch.id?lc.ch.nm+'赢':lc.tg.nm+'赢';
-    document.getElementById('y2').innerHTML='<div class="cw">'+wn+'</div>';
-    so('o1');
-    setTimeout(function(){db.ref('rooms/'+cR+'/lc').remove()},5000)
+function onDC(pid){
+  delete conns[pid];
+  if(!G)return;
+  if(mh()){
+    var p=G.ps[pid];
+    if(p&&p.alive&&!p.fd){
+      p.fd=true;
+      sysC(p.name+' 掉线了');
+      bcast({t:'s',g:G});
+      chkEnd();
+    }
+  }else if(pid===G.host){
+    migHost();
   }
 }
 
+// ===== 房间 =====
+function createRoom(){
+  myN=document.getElementById('i0').value.trim()||'匿名';
+  rCode=String(Math.floor(100000+Math.random()*900000));
+  isH=true;
+  var pid='zjh'+rCode;
+  initPeer(pid,function(){
+    G={host:myId,rc:rCode,ps:{},st:'wait',pot:0,cBet:ANTE,dl:myId,ct:'',dk:[],tt:0};
+    addP(myId,myN);
+    pg('lobby');
+    updLob();
+    toast('房间已创建: '+rCode);
+  });
+}
+
+function joinRoom(){
+  myN=document.getElementById('i0').value.trim()||'匿名';
+  rCode=document.getElementById('i2').value.trim();
+  if(rCode.length!==6){toast('请输入6位房间号');return}
+  isH=false;
+  pg('lobby');
+  document.getElementById('roomInfo').textContent='连接中...';
+  var myPid='zjhu'+uid(8);
+  initPeer(myPid,function(){
+    var hostPid='zjh'+rCode;
+    document.getElementById('roomInfo').textContent='加入房间 '+rCode+'...';
+    connTo(hostPid);
+    setTimeout(function(){sto(hostPid,{t:'join',name:myN,pid:myId})},500);
+  });
+}
+
+function addP(pid,name){
+  if(!G)return;
+  if(Object.keys(G.ps).length>=PX&&!G.ps[pid])return;
+  G.ps[pid]={id:pid,name:name,ch:1000,cd:[],lk:false,fd:false,alive:true};
+}
+
+// ===== 消息 =====
+function onMsg(d,from){
+  switch(d.t){
+    case 'join':
+      if(mh()&&G.st==='wait'){
+        addP(d.pid,d.name);
+        // 把新人加入连接列表
+        if(!conns[d.pid]&&peer.connections[d.pid]){
+          var arr=peer.connections[d.pid];
+          if(Array.isArray(arr))conns[d.pid]=arr[0];
+          else conns[d.pid]=arr;
+        }
+        sto(d.pid,{t:'welcome',g:G,hid:myId,yid:d.pid});
+        bcast({t:'s',g:G});
+        sysC(d.name+' 加入了房间');
+      }
+      break;
+    case 'welcome':
+      G=d.g;
+      // 重新连接房主
+      if(d.hid&&d.hid!==myId&&!conns[d.hid]){
+        connTo(d.hid);
+        setTimeout(function(){sto(d.hid,{t:'join',name:myN,pid:myId})},300);
+      }
+      updUI();
+      break;
+    case 's':
+      G=d.g;
+      updUI();
+      break;
+    case 'act':
+      if(mh())hAct(d,from);
+      break;
+    case 'chat':
+      addCh(d.name,d.msg);
+      break;
+    case 'cmpRes':
+      showCmpRes(d);
+      break;
+    case 'rndEnd':
+      showRndEnd(d);
+      break;
+    case 'mig':
+      G=d.g;isH=(myId===G.host);updUI();break;
+  }
+}
+
+// ===== 牌 =====
+function mkDk(){var d=[];for(var s=0;s<4;s++)for(var r=0;r<13;r++)d.push({s:SU[s],r:RK[r],v:r+2});return d}
+function shuf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+
+function evH(cd){
+  var so=cd.slice().sort(function(a,b){return b.v-a.v});
+  var v=so.map(function(c){return c.v});
+  var fl=cd[0].s===cd[1].s&&cd[1].s===cd[2].s;
+  var st=false,hi=v[0];
+  if(v[0]-v[1]===1&&v[1]-v[2]===1){st=true;hi=v[0]}
+  if(v[0]===14&&v[1]===3&&v[2]===2){st=true;hi=3}
+  var tr=v[0]===v[1]&&v[1]===v[2];
+  var pr=!tr&&(v[0]===v[1]||v[1]===v[2]);
+  var pv=pr?(v[0]===v[1]?v[0]:v[1]):0;
+  var kk=pr?(v[0]===v[1]?v[2]:v[0]):0;
+  var tp,sc;
+  if(tr){tp=6;sc=6e6+v[0]}
+  else if(fl&&st){tp=5;sc=5e6+hi}
+  else if(fl){tp=4;sc=4e6+v[0]*1e4+v[1]*100+v[2]}
+  else if(st){tp=3;sc=3e6+hi}
+  else if(pr){tp=2;sc=2e6+pv*1e4+kk}
+  else{tp=1;sc=1e6+v[0]*1e4+v[1]*100+v[2]}
+  var nm={6:'豹子',5:'同花顺',4:'同花',3:'顺子',2:'对子',1:'散牌'};
+  return{tp:tp,sc:sc,nm:nm[tp]};
+}
+
+function cmpH(a,b){
+  var ha=evH(a),hb=evH(b);
+  if(ha.sc>hb.sc)return 1;
+  if(ha.sc<hb.sc)return-1;
+  return-1;
+}
+
+// ===== 游戏逻辑（房主） =====
+function aPs(){if(!G||!G.ps)return[];return Object.values(G.ps).filter(function(p){return p.alive&&!p.fd})}
+function allPs(){return Object.values(G.ps).filter(function(p){return p.alive})}
+
+function startGame(){
+  if(!mh())return;
+  var ps=aPs();
+  if(ps.length<2){toast('至少需要2人');return}
+  G.st='play';G.pot=0;G.cBet=ANTE;G.dk=shuf(mkDk());
+  ps.forEach(function(p){p.cd=[];p.lk=false;p.fd=false;p.alive=true});
+  // 底注
+  ps.forEach(function(p){var a=Math.min(ANTE,p.ch);p.ch-=a;G.pot+=a});
+  // 发牌
+  var ix=0;
+  for(var r=0;r<3;r++)ps.forEach(function(p){p.cd.push(G.dk[ix++])});
+  // 庄家下一位先手
+  var di=ps.findIndex(function(p){return p.id===G.dl});
+  if(di<0)di=0;
+  var fi=(di+1)%ps.length;
+  G.ct=ps[fi].id;
+  startTmr();
+  bcast({t:'s',g:G});
+  sysC('游戏开始！底注 '+ANTE+' 分');
+}
+
+function nextT(){
+  var ps=aPs();
+  if(ps.length<=1){endRnd(ps[0]||null);return}
+  var ci=ps.findIndex(function(p){return p.id===G.ct});
+  var ni=(ci+1)%ps.length;
+  G.ct=ps[ni].id;
+  startTmr();
+  bcast({t:'s',g:G});
+}
+
+function startTmr(){
+  clearInterval(tmr);
+  tLeft=TSEC;
+  G.tt=Date.now()+TSEC*1000;
+  updTmrUI();
+  tmr=setInterval(function(){
+    tLeft--;
+    updTmrUI();
+    if(tLeft===WSEC){
+      var p=G.ps[G.ct];
+      if(p)sysC('⏰ '+p.name+' 还有 '+WSEC+' 秒！');
+    }
+    if(tLeft<=0){
+      clearInterval(tmr);
+      if(mh()&&G.ct){
+        var cp=G.ps[G.ct];
+        if(cp&&!cp.fd){cp.fd=true;sysC(cp.name+' 超时，自动弃牌');bcast({t:'s',g:G});chkEnd()}
+      }
+    }
+  },1000);
+}
+
+function hAct(d,from){
+  if(G.ct!==d.pid)return;
+  var p=G.ps[d.pid];
+  if(!p||p.fd||!p.alive)return;
+  switch(d.act){
+    case 'look':
+      p.lk=true;
+      sysC(p.name+' 看了牌');
+      bcast({t:'s',g:G});
+      break;
+    case 'call':{
+      var cost=p.lk?G.cBet:Math.ceil(G.cBet/2);
+      cost=Math.min(cost,p.ch);
+      p.ch-=cost;G.pot+=cost;
+      sysC(p.name+(p.lk?' 跟注 ':' 闷跟 ')+cost);
+      nextT();
+      break;
+    }
+    case 'raise':{
+      var nb=G.cBet*2;G.cBet=nb;
+      var cost2=p.lk?nb:Math.ceil(nb/2);
+      cost2=Math.min(cost2,p.ch);
+      p.ch-=cost2;G.pot+=cost2;
+      sysC(p.name+(p.lk?' 加注到 ':' 闷加到 ')+nb);
+      nextT();
+      break;
+    }
+    case 'fold':
+      p.fd=true;
+      sysC(p.name+' 弃牌');
+      bcast({t:'s',g:G});chkEnd();
+      break;
+    case 'compare':{
+      var tg=G.ps[d.tgt];
+      if(!tg||tg.fd)return;
+      var aps=aPs();
+      // 闷牌比牌：仅剩2人且都闷牌
+      if(!p.lk&&!tg.lk&&aps.length>2){sysC('场上还有其他人时，不能两人闷牌互比');return}
+      var cc=p.lk?G.cBet:Math.ceil(G.cBet/2);
+      cc=Math.min(cc,p.ch);p.ch-=cc;G.pot+=cc;
+      var res=cmpH(p.cd,tg.cd);
+      var los=res<=0?p:tg;
+      los.fd=true;
+      sysC(p.name+' 与 '+tg.name+' 比牌 — '+los.name+' 输了！');
+      // 比牌结果发给双方
+      sto(p.id,{t:'cmpRes',me:p.cd,th:tg.cd,won:res>0,mn:p.name,tn:tg.name});
+      sto(tg.id,{t:'cmpRes',me:tg.cd,th:p.cd,won:res<=0,mn:tg.name,tn:p.name});
+      bcast({t:'s',g:G});chkEnd();
+      break;
+    }
+  }
+}
+
+function chkEnd(){var aps=aPs();if(aps.length<=1)endRnd(aps[0]||null)}
+
+function endRnd(w){
+  clearInterval(tmr);
+  G.st='end';
+  if(w){w.ch+=G.pot;sysC('🏆 '+w.name+' 赢得 '+G.pot+' 分！');G.dl=w.id}
+  // 收集所有玩家手牌信息发给所有人
+  var cards={};
+  Object.values(G.ps).forEach(function(p){if(p.cd.length)cards[p.id]={name:p.name,cd:p.cd,lk:p.lk,fd:p.fd}});
+  bcast({t:'rndEnd',g:G,wid:w?w.id:null,cards:cards});
+  updUI();
+}
+
+function nextRound(){
+  if(!mh())return;
+  Object.values(G.ps).forEach(function(p){if(p.ch<=0)p.alive=false});
+  if(allPs().length<2){toast('剩余玩家不足');return}
+  G.st='wait';startGame();
+}
+
+function migHost(){
+  var ks=Object.keys(G.ps).filter(function(k){return k!==G.host});
+  if(!ks.length){toast('房主掉线，无人接替');return}
+  var nh=ks[0];G.host=nh;
+  if(nh===myId)isH=true;
+  sysC('房主迁移至 '+G.ps[nh].name);
+  bcast({t:'mig',g:G});updUI();
+}
+
+// ===== 玩家操作 =====
+function doLook(){if(!G||G.ct!==myId)return;sHost({t:'act',act:'look',pid:myId})}
+function doCall(){if(!G||G.ct!==myId)return;sHost({t:'act',act:'call',pid:myId})}
+function doRaise(){if(!G||G.ct!==myId)return;sHost({t:'act',act:'raise',pid:myId})}
+function doFold(){if(!G||G.ct!==myId)return;sHost({t:'act',act:'fold',pid:myId})}
+function doCompare(){
+  if(!G||G.ct!==myId)return;
+  var aps=aPs().filter(function(p){return p.id!==myId});
+  if(!aps.length){toast('没有可比牌的对手');return}
+  var box=document.getElementById('cmpPicks');box.innerHTML='';
+  aps.forEach(function(p){
+    var d=document.createElement('div');d.className='pick';
+    d.innerHTML='<span>'+xe(p.name)+(p.lk?' 🔍':' 闷')+'</span><span>💰'+p.ch+'</span>';
+    d.onclick=function(){closeCmpModal();sHost({t:'act',act:'compare',pid:myId,tgt:p.id})};
+    box.appendChild(d);
+  });
+  document.getElementById('cmpModal').classList.add('on');
+}
+function closeCmpModal(){document.getElementById('cmpModal').classList.remove('on')}
+function closeCmpResult(){document.getElementById('cmpResult').classList.remove('on')}
+
+// ===== 聊天 =====
+function sysC(m){addCh('系统',m,true)}
+function addCh(n,m,sys){
+  var b=document.getElementById('chatBox');
+  var d=document.createElement('div');d.className='cm';
+  d.innerHTML='<span class="cn" style="'+(sys?'color:#2cb67d':'')+'">'+xe(n)+'</span> '+xe(m);
+  b.appendChild(d);b.scrollTop=b.scrollHeight;
+}
+function sendChat(){
+  var i=document.getElementById('chatIn'),m=i.value.trim();
+  if(!m)return;i.value='';
+  addCh(myN,m);bcast({t:'chat',name:myN,msg:m});sHost({t:'chat',name:myN,msg:m});
+}
+
+// ===== UI渲染 =====
+function updLob(){
+  if(!G)return;
+  document.getElementById('roomInfo').textContent='房间: '+G.rc;
+  document.getElementById('roomLink').value=location.origin+location.pathname+'?r='+G.rc;
+  document.getElementById('pCount').textContent=Object.keys(G.ps).length;
+  var box=document.getElementById('playerList');box.innerHTML='';
+  Object.values(G.ps).forEach(function(p){
+    var me=p.id===myId,h=p.id===G.host;
+    var d=document.createElement('div');d.className='si';
+    d.innerHTML='<div class="sn"><span class="dot'+(p.alive?'':' off')+'"></span>'+
+      xe(p.name)+(me?' (你)':'')+(h?' 👑':'')+'</div><div class="amt">💰'+p.ch+'</div>';
+    box.appendChild(d);
+  });
+  var w=G.st==='wait';
+  document.getElementById('hostCtrl').style.display=(w&&mh())?'block':'none';
+  document.getElementById('waitStart').style.display=(w&&!mh())?'block':'none';
+}
+
+function updUI(){
+  if(!G)return;
+  updLob();
+  var play=G.st==='play',end=G.st==='end';
+  document.getElementById('gameUI').style.display=(play||end)?'block':'none';
+  document.getElementById('hostCtrl').style.display='none';
+  document.getElementById('waitStart').style.display='none';
+  if(end){showRndEndLocal();return}
+  if(!play)return;
+  document.getElementById('potVal').textContent=G.pot;
+  document.getElementById('curBet').textContent=G.cBet;
+  var me=G.ps[myId];
+  if(me)document.getElementById('myChips').textContent=me.ch;
+  renderCards();
+  var myT=G.ct===myId&&me&&!me.fd&&me.alive;
+  document.getElementById('actionBtns').style.display=myT?'block':'none';
+  if(myT){
+    document.getElementById('btnLook').style.display=me.lk?'none':'block';
+    var cc=me.lk?G.cBet:Math.ceil(G.cBet/2);
+    document.getElementById('btnCall').textContent=(me.lk?'跟注':'闷跟')+' ('+cc+')';
+    document.getElementById('btnCall').disabled=me.ch<cc;
+    document.getElementById('btnRaise').textContent='⬆️ 加注 ('+G.cBet*2+')';
+    document.getElementById('btnCmp').disabled=aPs().length<2;
+  }
+}
+
+function renderCards(){
+  var me=G.ps[myId];
+  if(!me||!me.cd.length){document.getElementById('myCards').innerHTML='';return}
+  var box=document.getElementById('myCards');box.innerHTML='';
+  me.cd.forEach(function(c){
+    var d=document.createElement('div');
+    if(me.lk){
+      d.className='cd '+(isRed(c)?'r':'b');
+      d.innerHTML='<span class="lg">'+xe(c.r)+'</span><span class="sm">'+xe(c.s)+'</span>';
+    }else{
+      d.className='cd hid';
+      d.innerHTML='<span class="lg">?</span><span class="sm">点击看牌</span>';
+      d.onclick=doLook;
+    }
+    box.appendChild(d);
+  });
+  document.getElementById('handLabel').textContent=me.lk?'你的手牌 — '+evH(me.cd).nm:'你的手牌 (点击看牌)';
+}
+
+function updTmrUI(){
+  var f=document.getElementById('timerFill');
+  var b=document.getElementById('timerBar');
+  f.style.width=(tLeft/TSEC*100)+'%';
+  if(tLeft<=WSEC)b.classList.add('wrn');else b.classList.remove('wrn');
+}
+
+function showCmpRes(d){
+  var h=document.getElementById('cmpResContent');
+  var myH=evH(d.me),thH=evH(d.th);
+  h.innerHTML='<div class="'+(d.won?'win':'lose')+'">'+(d.won?'🎉 你赢了！':'😢 你输了')+'</div>'+
+    '<div style="margin:10px 0"><div>你: '+d.mn+' — '+myH.nm+'</div><div>'+d.tn+': — '+thH.nm+'</div></div>';
+  document.getElementById('cmpResult').classList.add('on');
+}
+
+function showRndEnd(d){
+  G=d.g;
+  var wid=d.wid,w=G.ps[wid];
+  var h=document.getElementById('roundResContent');
+  h.innerHTML=w?'<div class="win">🏆 '+xe(w.name)+' 赢得 '+G.pot+' 分！</div>':'<div class="lose">平局</div>';
+  // 显示所有玩家手牌
+  var cb=document.getElementById('roundCards');cb.innerHTML='';
+  if(d.cards){
+    Object.values(d.cards).forEach(function(info){
+      var d2=document.createElement('div');d2.style.cssText='margin:6px 0;font-size:.85em';
+      d2.textContent=xe(info.name)+(info.fd?' (弃牌)':'')+': '+evH(info.cd).nm;
+      cb.appendChild(d2);
+    });
+  }
+  document.getElementById('roundEnd').classList.add('on');
+  updUI();
+}
+
+function showRndEndLocal(){
+  // 本地显示回合结束（房主广播之前可能先触发）
+  var wid=null,w=null;
+  Object.values(G.ps).forEach(function(p){if(p.alive&&!p.fd){wid=p.id;w=p}});
+  var h=document.getElementById('roundResContent');
+  h.innerHTML=w?'<div class="win">🏆 '+xe(w.name)+' 赢得 '+G.pot+' 分！</div>':'<div class="lose">无人获胜</div>';
+  document.getElementById('roundEnd').classList.add('on');
+}
+
+function copyLink(){
+  var l=document.getElementById('roomLink').value;
+  if(navigator.clipboard)navigator.clipboard.writeText(l).then(function(){toast('链接已复制！')}).catch(function(){toast('复制失败')});
+  else{document.getElementById('roomLink').select();document.execCommand('copy');toast('链接已复制！')}
+}
+
+// ===== 自动加入 =====
 var _usp=new URLSearchParams(location.search);
 if(_usp.get('r')){
   document.getElementById('i2').value=_usp.get('r');
-  if(_fbReady){var _c=gc();if(_c&&_c.apiKey&&_c.databaseURL){ini(_c);myn='匿名';jn()}}
+  // 自动填充房间号但不自动加入，让用户先输入昵称
 }
-</script>
+<\/script>
 </body>
 </html>
