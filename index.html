@@ -2,187 +2,137 @@
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>炸金花</title>
-
+<meta name="viewport" content="width=device-width,initial-scale=1.0,user-scalable=no">
+<title>炸金花 - 仅供娱乐</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;min-height:100vh;overflow-x:hidden}
-.pg{display:none;flex-direction:column;align-items:center;padding:16px;max-width:480px;margin:0 auto;min-height:100vh}
-.pg.on{display:flex}
-.hd{text-align:center;margin:20px 0}
-.hd h1{font-size:2em;background:linear-gradient(90deg,#f7971e,#ffd200);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
-.hd p{color:#aaa;font-size:.85em;margin-top:4px}
-.warn{color:#ff6b6b;font-size:.75em;text-align:center;margin:8px 0}
-.ipt{width:100%;padding:12px 16px;border:2px solid #444;border-radius:12px;background:#1a1a2e;color:#fff;font-size:1em;outline:none;margin:8px 0}
-.ipt:focus{border-color:#f7971e}
-.bt{width:100%;padding:14px;border:none;border-radius:12px;font-size:1.05em;font-weight:700;cursor:pointer;margin:8px 0;transition:all .2s}
-.bt:active{transform:scale(.97)}
-.bt:disabled{opacity:.4;cursor:not-allowed}
-.bg{background:linear-gradient(135deg,#f7971e,#ffd200);color:#000}
-.br{background:linear-gradient(135deg,#7f5af0,#2cb67d);color:#fff}
-.bs{background:linear-gradient(135deg,#e63946,#ff6b6b);color:#fff}
-.bl{background:linear-gradient(135deg,#2196f3,#64b5f6);color:#fff}
-.bx{background:transparent;border:2px solid #555;color:#aaa}
-.bdg{background:linear-gradient(135deg,#f7971e,#ffd200);color:#000;font-size:.7em;padding:3px 8px;border-radius:8px}
-.row{display:flex;gap:8px;width:100%}
-.row .bt{flex:1}
-.rm{font-size:.9em;color:#aaa;margin-top:12px;text-align:center}
-.pi{display:flex;gap:10px;width:100%;margin:6px 0}
-.pi .ipt{flex:1;margin:0}
-.pi .bt{width:auto;padding:12px 20px;margin:0;white-space:nowrap}
-.si{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#1a1a2e;border-radius:10px;margin:6px 0}
-.si .sn{display:flex;align-items:center;gap:8px}
-.si .dot{width:8px;height:8px;border-radius:50%;background:#2cb67d}
-.si .dot.off{background:#555}
-.si .amt{color:#ffd200;font-weight:700}
-.pots{width:100%;text-align:center;padding:16px;background:linear-gradient(135deg,#1a1a2e,#16213e);border-radius:14px;margin:10px 0}
-.pots .lb{color:#aaa;font-size:.85em}
-.pots .vl{font-size:2em;font-weight:700;color:#ffd200}
-.pots .st{color:#aaa;font-size:.8em;margin-top:4px}
-.acts{width:100%;margin:10px 0}
-.acts .ro{display:flex;gap:8px;margin:6px 0}
-.acts .bt{margin:0}
-.cards{display:flex;gap:8px;margin:10px 0;justify-content:center}
-.cd{width:56px;height:80px;border-radius:8px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;transition:all .3s}
-.cd.r{color:#e63946}
-.cd.b{color:#000}
-.cd.hid{background:linear-gradient(135deg,#2196f3,#1565c0);color:transparent;cursor:pointer}
-.cd.lg{font-size:1.3em}
-.cd.sm{font-size:.7em}
-.tmr{width:100%;height:6px;background:#1a1a2e;border-radius:3px;margin:6px 0;overflow:hidden}
-.tmr .bar{height:100%;background:linear-gradient(90deg,#2cb67d,#ffd200);border-radius:3px;transition:width 1s linear}
-.tmr.wrn .bar{background:linear-gradient(90deg,#e63946,#ff6b6b)}
-.chat{width:100%;background:#1a1a2e;border-radius:12px;margin:10px 0;overflow:hidden}
-.chat .ch{height:120px;overflow-y:auto;padding:8px 12px;font-size:.85em}
-.chat .cm{margin:3px 0}
-.chat .cn{color:#7f5af0;font-weight:700}
-.chat .ci{display:flex;gap:6px;padding:8px}
-.chat .ci .ipt{flex:1;margin:0;padding:8px 12px;font-size:.85em}
-.chat .ci .bt{width:auto;padding:8px 14px;margin:0;font-size:.85em}
-.modal{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center;padding:20px}
-.modal.on{display:flex}
-.modal .mc{background:#1a1a2e;border-radius:16px;padding:24px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto}
-.modal .mc h3{text-align:center;margin-bottom:16px}
-.pick{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:#16213e;border-radius:10px;margin:6px 0;cursor:pointer}
-.pick:hover{background:#243b55}
-.rst{width:100%;text-align:center;padding:16px}
-.rst .win{font-size:1.5em;color:#ffd200;font-weight:700}
-.rst .lose{font-size:1.2em;color:#ff6b6b}
-.toast{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:12px 24px;border-radius:10px;z-index:200;font-size:.9em;opacity:0;transition:opacity .3s;pointer-events:none}
-.toast.show{opacity:1}
-.cprw{width:100%;display:flex;gap:8px;margin:8px 0}
-.cprw .ipt{flex:1;margin:0;font-size:.85em}
-.cprw .bt{width:auto;padding:10px 16px;margin:0;white-space:nowrap;font-size:.85em}
-.hcd{display:flex;gap:4px;justify-content:center;margin:6px 0}
-.hcd .mc2{width:30px;height:42px;border-radius:4px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;font-size:.6em}
-.hcd .mc2.r{color:#e63946}
-.hcd .mc2.b{color:#000}
-.hcd .mc2.hid{background:linear-gradient(135deg,#1565c0,#2196f3)}
-.dead{opacity:.4;pointer-events:none}
-@media(max-width:380px){.cd{width:48px;height:68px}.cd.lg{font-size:1.1em}.cd.sm{font-size:.6em}}
+:root{--bg:#1a0a2e;--cbg:#2d1b4e;--gd:#ffd700;--rd:#e74c3c;--gn:#27ae60;--bl:#3498db;--tx:#f0e6ff;--dm:#8b7da8}
+body{font-family:-apple-system,sans-serif;background:var(--bg);color:var(--tx);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.page{display:none;min-height:100vh;padding:16px;flex-direction:column;align-items:center}.page.active{display:flex}
+.disc{background:rgba(231,76,60,.15);border:1px solid var(--rd);color:#ff6b6b;border-radius:8px;padding:8px 12px;font-size:12px;text-align:center;margin:8px 0;width:100%;max-width:400px}
+.ttl{font-size:28px;font-weight:bold;color:var(--gd);margin:20px 0 8px;text-shadow:0 0 20px rgba(255,215,0,.3)}
+.sub{color:var(--dm);font-size:14px;margin-bottom:16px}
+input{width:100%;max-width:340px;padding:12px 16px;border:2px solid #4a3070;border-radius:10px;background:var(--cbg);color:var(--tx);font-size:16px;outline:none;margin:6px 0}input:focus{border-color:var(--gd)}
+.btn{padding:12px 24px;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;transition:all .15s;margin:6px;width:100%;max-width:340px}.btn:active{transform:scale(.96)}
+.bp{background:linear-gradient(135deg,#6c3483,#8e44ad);color:#fff}.bg{background:linear-gradient(135deg,#d4a017,#ffd700);color:#1a0a2e}
+.bd{background:linear-gradient(135deg,#922b21,#c0392b);color:#fff}.bs{background:linear-gradient(135deg,#1e8449,#27ae60);color:#fff}
+.sm{padding:8px 14px;font-size:13px;max-width:none;margin:3px}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.ld{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.6);z-index:999;align-items:center;justify-content:center}.ld.on{display:flex}
+.ldt{color:var(--gd);font-size:18px;animation:lp 1s infinite}
+.hdr{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:8px 0;border-bottom:1px solid #4a3070;margin-bottom:8px}
+.rid,.pts{font-size:14px}.rid{color:var(--gd);cursor:pointer}.pts{background:linear-gradient(135deg,#d4a017,#ffd700);color:#1a0a2e;padding:3px 10px;border-radius:16px;font-weight:bold}
+.parea{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;max-width:600px;margin:8px 0}
+.pc{background:var(--cbg);border:2px solid #4a3070;border-radius:12px;padding:10px;min-width:78px;text-align:center;transition:all .3s}
+.pc.myt{border-color:var(--gd);box-shadow:0 0 15px rgba(255,215,0,.4);animation:pu 1.5s infinite}.pc.fld{opacity:.4}
+.pc.me .pn{color:var(--gd)}
+.pn{font-size:13px;font-weight:bold;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:78px}
+.pp{font-size:11px;color:var(--gn)}.ps{font-size:10px;margin-top:2px}
+.ps.lk{color:var(--bl)}.ps.bl{color:var(--dm)}.ps.fd{color:var(--rd)}.pb{font-size:10px;color:var(--gd);margin-top:2px}
+.cda{display:flex;gap:8px;justify-content:center;align-items:center;margin:10px 0;perspective:600px;flex-wrap:wrap}
+.cd{width:50px;height:74px;border-radius:8px;position:relative;transform-style:preserve-3d;transition:transform .5s;display:inline-block}
+.cd.flip{transform:rotateY(180deg)}
+.cfr,.cbk{position:absolute;width:100%;height:100%;border-radius:8px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.cfr{background:#fff;transform:rotateY(180deg);border:2px solid #ddd}.cfr.red{color:var(--rd)}.cfr.black{color:#333}
+.ck{font-size:17px;font-weight:bold;line-height:1}.cs{font-size:20px;line-height:1}
+.ht{color:var(--gd);font-size:13px;font-weight:bold;margin-top:4px}
+.gi{background:var(--cbg);border-radius:12px;padding:12px;width:100%;max-width:600px;text-align:center;margin:8px 0}
+.potv{font-size:20px;color:var(--gd);font-weight:bold}.betv{font-size:13px;color:var(--dm);margin-top:4px}.trnv{font-size:13px;color:var(--bl);margin-top:2px}
+.ax{display:flex;flex-wrap:wrap;gap:5px;justify-content:center;width:100%;max-width:600px;margin:8px 0;padding:8px}
+.ov{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center}.ov.on{display:flex}
+.pn2{background:var(--bg);border:2px solid var(--gd);border-radius:16px;padding:20px;text-align:center;max-width:400px;width:90%;max-height:80vh;overflow-y:auto}
+.pt2{font-size:20px;color:var(--gd);margin-bottom:12px;font-weight:bold}
+.cml{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.crw{display:flex;justify-content:space-around;margin:16px 0}.cmh{text-align:center}
+.cmh .chn{font-size:14px;font-weight:bold;margin-bottom:8px}.cmh .chtp{font-size:13px;color:var(--gd);margin-top:6px}
+.cmw{font-size:16px;color:var(--gn);font-weight:bold;margin-top:8px}.cmls{opacity:.5}
+.ec{margin:16px 0;text-align:left}
+.er{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #4a3070;margin:4px 0;border-radius:8px}.er.fdr{opacity:.4}
+.ern{width:68px;font-size:13px;font-weight:bold;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.erc{display:flex;gap:3px}.ercs{font-size:12px;padding:2px 4px;border-radius:4px;background:#fff;min-width:26px;text-align:center}.ercs.red{color:var(--rd)}.ercs.black{color:#333}
+.ertp{font-size:11px;color:var(--gd);margin-left:auto}
+.cpn{width:100%;max-width:600px;background:var(--cbg);border-radius:12px;margin:8px 0;overflow:hidden}
+.cph{padding:8px 12px;background:rgba(255,255,255,.05);font-size:13px;font-weight:bold;cursor:pointer;display:flex;justify-content:space-between}
+.cpm{max-height:150px;overflow-y:auto;padding:8px 12px;font-size:13px}.cpm:empty::after{content:'暂无消息';color:var(--dm);display:block;text-align:center;padding:8px}
+.cmg{margin:3px 0}.cmg .cn{color:var(--bl);font-weight:bold}
+.cpi{display:flex;gap:6px;padding:8px}.cpi input{flex:1;margin:0;max-width:none}.cpi .btn{max-width:56px;margin:0}
+.stp{width:100%;max-width:400px;background:var(--cbg);border-radius:12px;padding:16px;margin:8px 0}
+.stp h3{color:var(--gd);margin-bottom:8px;font-size:15px}.stp p{color:var(--dm);font-size:12px;line-height:1.5;margin:4px 0}.stp a{color:var(--bl)}
+.step{margin:8px 0;padding:8px;border-left:3px solid var(--gd);padding-left:12px}.step b{color:var(--gd)}
+.inv{background:var(--cbg);border:2px dashed var(--gd);border-radius:10px;padding:12px;color:var(--gd);cursor:pointer;font-size:14px;max-width:340px;width:100%;margin:8px 0}.inv:hover{background:rgba(255,215,0,.1)}
+.lvb{position:fixed;top:8px;right:8px;z-index:50;background:#c0392b;color:#fff;border:none;border-radius:8px;padding:6px 12px;font-size:12px;cursor:pointer}
+@keyframes pu{0%,100%{box-shadow:0 0 10px rgba(255,215,0,.3)}50%{box-shadow:0 0 25px rgba(255,215,0,.6)}}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.4}}
+@media(max-width:400px){.cd{width:42px;height:62px}.ck{font-size:14px}.cs{font-size:17px}.pc{min-width:64px;padding:6px}}
 </style>
 </head>
 <body>
-<!-- 首页 -->
-<div class="pg on" id="home">
-  <div class="hd"><h1>🃏 炸金花</h1><p>好友娱乐专属</p></div>
-  <div class="warn">⚠️ 仅供娱乐，禁止赌博!</div>
-  <input class="ipt" id="i0" placeholder="输入昵称" maxlength="10" autofocus>
-  <div class="rm">创建房间 — 你将自动成为房主</div>
-  <button class="bt bg" onclick="createRoom()">创建房间</button>
-  <div class="rm">加入房间 — 输入6位房间号</div>
-  <div class="pi">
-    <input class="ipt" id="i2" placeholder="房间号" maxlength="6" inputmode="numeric">
-    <button class="bt bl" onclick="joinRoom()">加入</button>
-  </div>
-  <div class="warn" style="margin-top:40px">⚠️ 仅供娱乐，禁止赌博!</div>
+<div class="ld" id="loader"><div class="ldt">连接中...</div></div>
+
+<div id="pg-login" class="page active">
+<div class="ttl">🃏 炸金花</div>
+<div class="sub">好友娱乐专属</div>
+<div class="disc">⚠️ 仅供娱乐，禁止赌博！</div>
+<input id="inp-name" placeholder="输入你的昵称" maxlength="10" autofocus>
+<button class="btn bg" onclick="enterLobby()">进入大厅</button>
+<div class="stp" id="fb-setup" style="display:none">
+<h3>🔧 首次使用需配置 Firebase</h3>
+<p>Firebase 提供免费实时通信，<b>永久免费</b>，无需绑卡</p>
+<div class="step"><b>1</b>：打开 <a href="https://console.firebase.google.com" target="_blank">Firebase 控制台</a>，Google 登录</div>
+<div class="step"><b>2</b>：点「创建项目」→ 名称随意 → 确认</div>
+<div class="step"><b>3</b>：左侧 Build → Realtime Database → 创建 → 选「测试模式」→ 启用</div>
+<div class="step"><b>4</b>：齿轮⚙ → 项目设置 → 底部添加Web应用(</>) → 复制 firebaseConfig</div>
+<div class="step"><b>5</b>：点下方「📋 自动粘贴」→ 检查 → 保存</div>
+<button class="btn bg sm" onclick="autoFill()">📋 自动粘贴配置</button>
+<input id="fb-apiKey" placeholder="apiKey">
+<input id="fb-authDomain" placeholder="authDomain">
+<input id="fb-databaseURL" placeholder="databaseURL (必填!)">
+<input id="fb-projectId" placeholder="projectId">
+<input id="fb-storageBucket" placeholder="storageBucket">
+<input id="fb-messagingSenderId" placeholder="messagingSenderId">
+<input id="fb-appId" placeholder="appId">
+<button class="btn bp sm" onclick="saveConfig()">💾 保存配置</button>
+</div>
 </div>
 
-<!-- 大厅/游戏 -->
-<div class="pg" id="lobby">
-  <div class="hd"><h1>🃏 炸金花</h1></div>
-  <div class="warn">⚠️ 仅供娱乐，禁止赌博!</div>
-  <div class="rm" id="roomInfo">房间: ------</div>
-  <div class="cprw">
-    <input class="ipt" id="roomLink" readonly>
-    <button class="bt bg" onclick="copyLink()">复制链接</button>
-  </div>
-  <div style="width:100%;margin:10px 0">
-    <div style="color:#aaa;font-size:.85em;margin-bottom:6px">玩家 (<span id="pCount">0</span>/6)</div>
-    <div id="playerList"></div>
-  </div>
-  <div id="gameUI" style="display:none;width:100%">
-    <div class="pots">
-      <div class="lb">奖池</div>
-      <div class="vl" id="potVal">0</div>
-      <div class="st">当前注额: <span id="curBet">5</span> | 你的筹码: <span id="myChips">0</span></div>
-    </div>
-    <div class="tmr" id="timerBar"><div class="bar" id="timerFill" style="width:100%"></div></div>
-    <div style="text-align:center;margin:8px 0">
-      <div style="color:#aaa;font-size:.8em" id="handLabel">你的手牌 (点击看牌)</div>
-      <div class="cards" id="myCards"></div>
-    </div>
-    <div class="acts" id="actionBtns" style="display:none">
-      <div class="ro">
-        <button class="bt bl" onclick="doLook()" id="btnLook">👀 看牌</button>
-        <button class="bt bg" onclick="doCall()" id="btnCall">跟注</button>
-      </div>
-      <div class="ro">
-        <button class="bt br" onclick="doRaise()" id="btnRaise">⬆️ 加注</button>
-        <button class="bt bs" onclick="doCompare()" id="btnCmp">⚔️ 比牌</button>
-      </div>
-      <div class="ro">
-        <button class="bt bx" onclick="doFold()">🏳️ 弃牌</button>
-      </div>
-    </div>
-    <div class="chat">
-      <div class="ch" id="chatBox"></div>
-      <div class="ci">
-        <input class="ipt" id="chatIn" placeholder="说点什么..." onkeydown="if(event.key==='Enter')sendChat()">
-        <button class="bt bx" onclick="sendChat()">发</button>
-      </div>
-    </div>
-  </div>
-  <div id="waitStart" style="display:none;width:100%;text-align:center;padding:20px">
-    <div style="color:#aaa;margin:10px 0">等待房主开始游戏...</div>
-  </div>
-  <div id="hostCtrl" style="width:100%;margin:10px 0;display:none">
-    <button class="bt bg" onclick="startGame()">🚀 开始游戏</button>
-  </div>
+<div id="pg-lobby" class="page">
+<div class="ttl">🃏 炸金花</div>
+<div class="disc">⚠️ 仅供娱乐，禁止赌博！</div>
+<div style="width:100%;max-width:340px;margin-top:16px">
+<h3 style="color:var(--gd);margin-bottom:8px">创建房间</h3>
+<input id="inp-ante" type="number" placeholder="底注(5-100，默认10)" min="5" max="100">
+<button class="btn bg" onclick="createRoom()">创建房间</button>
+</div>
+<div style="width:100%;max-width:340px;margin-top:20px">
+<h3 style="color:var(--gd);margin-bottom:8px">加入房间</h3>
+<input id="inp-room" placeholder="输入6位房间号" maxlength="6">
+<button class="btn bp" onclick="joinRoom()">加入房间</button>
+</div>
+<button class="btn bd sm" style="margin-top:20px;max-width:200px" onclick="resetConfig()">重置 Firebase 配置</button>
 </div>
 
-<!-- 弹窗 -->
-<div class="modal" id="cmpModal">
-  <div class="mc">
-    <h3>⚔️ 选择比牌对手</h3>
-    <div id="cmpPicks"></div>
-    <button class="bt bx" onclick="closeCmpModal()">取消</button>
-  </div>
+<div id="pg-game" class="page">
+<button class="lvb" onclick="leaveRoom()">✕ 离开</button>
+<div class="hdr"><div class="rid" id="d-rid" onclick="copyRid()">------</div><div class="pts" id="d-pts">1000分</div></div>
+<div class="parea" id="parea"></div>
+<div class="cda" id="cda"></div>
+<div class="gi"><div class="potv" id="d-pot">💰 0</div><div class="betv" id="d-bet">注额: 0</div><div class="trnv" id="d-turn"></div></div>
+<div class="ax" id="ax"></div>
+<div class="inv" onclick="copyInvite()">🔗 复制邀请链接</div>
+<div class="cpn">
+<div class="cph" onclick="togChat()"><span>💬 聊天</span><span id="cht-tg">▼</span></div>
+<div class="cpm" id="cht-msgs" style="display:none"></div>
+<div class="cpi" id="cht-in" style="display:none"><input id="cht-ipt" placeholder="说话..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()"><button class="btn bp sm" onclick="sendChat()">发</button></div>
 </div>
-<div class="modal" id="cmpResult">
-  <div class="mc">
-    <h3>⚔️ 比牌结果</h3>
-    <div class="rst" id="cmpResContent"></div>
-    <button class="bt bx" onclick="closeCmpResult()">确定</button>
-  </div>
+<div class="disc" style="margin-top:auto">⚠️ 仅供娱乐，禁止赌博！</div>
 </div>
-<div class="modal" id="roundEnd">
-  <div class="mc">
-    <h3>🏆 本局结束</h3>
-    <div class="rst" id="roundResContent"></div>
-    <div id="roundCards" style="margin:12px 0"></div>
-    <button class="bt bg" onclick="nextRound()">下一局</button>
-  </div>
-</div>
-<div class="toast" id="toast"></div>
 
+<div class="ov" id="ov-cmp"><div class="pn2"><div class="pt2">⚔️ 选择比牌对手</div><div class="cml" id="cmp-list"></div><button class="btn bd sm" onclick="hov('ov-cmp')">取消</button></div></div>
+<div class="ov" id="ov-res"><div class="pn2"><div class="pt2">⚔️ 比牌结果</div><div class="crw" id="cmp-hands"></div><div id="cmp-res"></div><button class="btn bp sm" style="margin-top:12px" onclick="hov('ov-res')">确定</button></div></div>
+<div class="ov" id="ov-end"><div class="pn2"><div class="pt2">🏆 本局结束</div><div id="end-w"></div><div id="end-p"></div><div class="ec" id="end-c"></div><button class="btn bg" style="margin-top:12px" onclick="hov('ov-end')">确定</button></div></div>
 
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <script>
-function loadPeerJS(cb){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';s.onload=cb;s.onerror=function(){console.warn('jsdelivr failed, trying unpkg...');var s2=document.createElement('script');s2.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';s2.onload=cb;s2.onerror=function(){alert('无法加载 PeerJS，请检查网络或使用VPN');};document.head.appendChild(s2);};document.head.appendChild(s);}
-var _peerReady=false;loadPeerJS(function(){_peerReady=true;if(typeof _onPeerReady==='function')_onPeerReady();});
-</script>
-<script>"use strict";
+"use strict";
 var RK=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 var SU=['♠','♥','♦','♣'];
 var ANTE=5,PX=6,TSEC=45,WSEC=30;
@@ -200,7 +150,6 @@ function isRed(c){return c.s==='♥'||c.s==='♦'}
 
 // ===== PeerJS =====
 function initPeer(peerId,callback){
-  if(typeof Peer==='undefined'){toast('PeerJS加载中，请稍后重试');return;}
   peer=new Peer(peerId,{debug:0});
   peer.on('open',function(id){
     myId=id;
@@ -658,6 +607,7 @@ if(_usp.get('r')){
   document.getElementById('i2').value=_usp.get('r');
   // 自动填充房间号但不自动加入，让用户先输入昵称
 }
+
 </script>
 </body>
 </html>
