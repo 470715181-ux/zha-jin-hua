@@ -1,0 +1,15 @@
+{
+  "name": "zha-jin-hua",
+  "version": "1.0.0",
+  "description": "多人实时在线炸金花 - 仅供娱乐，禁止赌博",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "start:tunnel": "node server.js --tunnel"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "localtunnel": "^2.0.2",
+    "socket.io": "^4.7.2"
+  }
+}

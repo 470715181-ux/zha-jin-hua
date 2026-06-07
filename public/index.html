@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>炸金花 - 仅供娱乐</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#1a0a2e;--card-bg:#2d1b4e;--gold:#ffd700;--red:#e74c3c;--green:#27ae60;--blue:#3498db;--text:#f0e6ff;--dim:#8b7da8;--btn:#6c3483;--btn-hover:#8e44ad;--danger:#c0392b}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-tap-highlight-color:transparent}
+.page{display:none;min-height:100vh;padding:16px;flex-direction:column;align-items:center}
+.page.active{display:flex}
+.disclaimer{background:rgba(231,76,60,.15);border:1px solid var(--red);color:#ff6b6b;border-radius:8px;padding:8px 12px;font-size:12px;text-align:center;margin:8px 0;width:100%;max-width:400px}
+.title{font-size:28px;font-weight:bold;color:var(--gold);margin:20px 0 8px;text-shadow:0 0 20px rgba(255,215,0,.3)}
+.subtitle{color:var(--dim);font-size:14px;margin-bottom:20px}
+input{width:100%;max-width:360px;padding:12px 16px;border:2px solid #4a3070;border-radius:10px;background:var(--card-bg);color:var(--text);font-size:16px;outline:none;margin:6px 0}
+input:focus{border-color:var(--gold)}
+.btn{padding:12px 24px;border:none;border-radius:10px;font-size:16px;font-weight:bold;cursor:pointer;transition:all .2s;margin:6px;width:100%;max-width:360px}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(135deg,var(--btn),var(--btn-hover));color:#fff}
+.btn-primary:hover{background:linear-gradient(135deg,var(--btn-hover),#a569bd)}
+.btn-gold{background:linear-gradient(135deg,#d4a017,var(--gold));color:#1a0a2e}
+.btn-gold:hover{background:linear-gradient(135deg,var(--gold),#ffe44d)}
+.btn-danger{background:linear-gradient(135deg,#922b21,var(--danger));color:#fff}
+.btn-success{background:linear-gradient(135deg,#1e8449,var(--green));color:#fff}
+.btn-sm{padding:8px 16px;font-size:13px;max-width:none;margin:3px}
+.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* 房间页 */
+.room-header{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:600px;padding:8px 0;border-bottom:1px solid #4a3070;margin-bottom:8px}
+.room-id{font-size:18px;color:var(--gold)}
+.points-badge{background:linear-gradient(135deg,#d4a017,var(--gold));color:#1a0a2e;padding:4px 12px;border-radius:20px;font-weight:bold;font-size:14px}
+
+/* 玩家列表 */
+.players-area{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;max-width:600px;margin:8px 0}
+.player-card{background:var(--card-bg);border:2px solid #4a3070;border-radius:12px;padding:10px;min-width:80px;text-align:center;position:relative;transition:all .3s}
+.player-card.active-turn{border-color:var(--gold);box-shadow:0 0 15px rgba(255,215,0,.4);animation:pulse 1.5s infinite}
+.player-card.folded{opacity:.4}
+.player-card.is-you .p-name{color:var(--gold)}
+.p-name{font-size:13px;font-weight:bold;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:80px}
+.p-points{font-size:11px;color:var(--green)}
+.p-status{font-size:10px;margin-top:2px}
+.p-status.looked{color:var(--blue)}
+.p-status.blind{color:var(--dim)}
+.p-status.fold-s{color:var(--red)}
+.p-bet{font-size:10px;color:var(--gold);margin-top:2px}
+
+/* 牌区 */
+.cards-area{display:flex;gap:8px;justify-content:center;margin:12px 0;perspective:600px}
+.card{width:52px;height:76px;border-radius:8px;position:relative;transform-style:preserve-3d;transition:transform .6s}
+.card.flipped{transform:rotateY(180deg)}
+.card-front,.card-back{position:absolute;width:100%;height:100%;border-radius:8px;backface-visibility:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.card-front{background:#fff;transform:rotateY(180deg);border:2px solid #ddd}
+.card-front.red{color:var(--red)}
+.card-front.black{color:#333}
+.card-rank{font-size:18px;font-weight:bold;line-height:1}
+.card-suit{font-size:22px;line-height:1}
+.card-back{background:linear-gradient(135deg,#4a3070,#6c3483);border:2px solid #8e44ad;display:flex;align-items:center;justify-content:center}
+.card-back::after{content:'🂠';font-size:28px;opacity:.6}
+
+/* 游戏信息 */
+.game-info{background:var(--card-bg);border-radius:12px;padding:12px;width:100%;max-width:600px;text-align:center;margin:8px 0}
+.pot-display{font-size:20px;color:var(--gold);font-weight:bold}
+.bet-display{font-size:13px;color:var(--dim);margin-top:4px}
+.turn-display{font-size:13px;color:var(--blue);margin-top:2px}
+
+/* 操作按钮组 */
+.actions{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%;max-width:600px;margin:8px 0;padding:8px}
+
+/* 比牌选择 */
+.compare-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.compare-overlay.show{display:flex}
+.compare-panel{background:var(--bg);border:2px solid var(--gold);border-radius:16px;padding:20px;text-align:center;max-width:360px;width:90%}
+.compare-list{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+
+/* 聊天 */
+.chat-panel{width:100%;max-width:600px;background:var(--card-bg);border-radius:12px;margin:8px 0;overflow:hidden}
+.chat-header{padding:8px 12px;background:rgba(255,255,255,.05);font-size:13px;font-weight:bold;cursor:pointer;display:flex;justify-content:space-between}
+.chat-msgs{max-height:150px;overflow-y:auto;padding:8px 12px;font-size:13px}
+.chat-msgs:empty::after{content:'暂无消息';color:var(--dim);display:block;text-align:center;padding:8px}
+.chat-msg{margin:3px 0}
+.chat-msg .cn{color:var(--blue);font-weight:bold}
+.chat-input-row{display:flex;gap:6px;padding:8px}
+.chat-input-row input{flex:1;margin:0;max-width:none}
+.chat-input-row .btn{max-width:60px;margin:0}
+
+/* 比牌结果动画 */
+.compare-result-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.compare-result-overlay.show{display:flex}
+.cr-panel{background:var(--bg);border:2px solid var(--gold);border-radius:16px;padding:24px;text-align:center;max-width:400px;width:90%}
+.cr-title{font-size:20px;color:var(--gold);margin-bottom:12px;font-weight:bold}
+.cr-hands{display:flex;justify-content:space-around;margin:16px 0}
+.cr-hand{text-align:center}
+.cr-hand .crh-name{font-size:14px;font-weight:bold;margin-bottom:8px}
+.cr-hand .crh-type{font-size:13px;color:var(--gold);margin-top:6px}
+.cr-winner{font-size:16px;color:var(--green);font-weight:bold;margin-top:8px}
+.cr-loser{opacity:.5}
+
+/* 游戏结束 */
+.game-end-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:200;align-items:center;justify-content:center}
+.game-end-overlay.show{display:flex}
+.ge-panel{background:var(--bg);border:2px solid var(--gold);border-radius:16px;padding:24px;text-align:center;max-width:420px;width:90%;max-height:80vh;overflow-y:auto}
+.ge-title{font-size:22px;color:var(--gold);margin-bottom:12px;font-weight:bold}
+.ge-winner-info{font-size:16px;color:var(--green);margin:8px 0}
+.ge-pot-info{font-size:16px;color:var(--gold);margin:4px 0}
+.ge-cards{margin:16px 0;text-align:left}
+.ge-player-row{display:flex;align-items:center;gap:8px;padding:8px;border-bottom:1px solid #4a3070;margin:4px 0;border-radius:8px}
+.ge-player-row.folded-row{opacity:.4}
+.ge-pr-name{width:70px;font-size:13px;font-weight:bold;overflow:hidden;text-overflow:ellipsis}
+.ge-pr-cards{display:flex;gap:3px}
+.ge-pr-card{font-size:12px;padding:2px 4px;border-radius:4px;background:#fff;min-width:28px;text-align:center}
+.ge-pr-card.red{color:var(--red)}
+.ge-pr-card.black{color:#333}
+.ge-pr-type{font-size:11px;color:var(--gold);margin-left:auto}
+
+@keyframes pulse{0%,100%{box-shadow:0 0 10px rgba(255,215,0,.3)}50%{box-shadow:0 0 25px rgba(255,215,0,.6)}}
+@media(max-width:400px){.card{width:44px;height:64px}.card-rank{font-size:15px}.card-suit{font-size:18px}.player-card{min-width:65px;padding:6px}}
+</style>
+</head>
+<body>
+
+<!-- 入口页 -->
+<div id="page-login" class="page active">
+  <div class="title">🃏 炸金花</div>
+  <div class="subtitle">好友娱乐专属</div>
+  <div class="disclaimer">⚠️ 仅供娱乐，禁止赌博！</div>
+  <input id="input-name" placeholder="输入你的昵称" maxlength="10" autofocus>
+  <button class="btn btn-gold" onclick="enterLobby()">进入大厅</button>
+</div>
+
+<!-- 大厅页 -->
+<div id="page-lobby" class="page">
+  <div class="title">🃏 炸金花</div>
+  <div class="disclaimer">⚠️ 仅供娱乐，禁止赌博！</div>
+  <div style="width:100%;max-width:360px;margin-top:16px">
+    <h3 style="color:var(--gold);margin-bottom:8px">创建房间</h3>
+    <input id="input-ante" type="number" placeholder="底注分数(5-100，默认10)" min="5" max="100">
+    <button class="btn btn-gold" onclick="createRoom()">创建房间</button>
+  </div>
+  <div style="width:100%;max-width:360px;margin-top:20px">
+    <h3 style="color:var(--gold);margin-bottom:8px">加入房间</h3>
+    <input id="input-room-id" placeholder="输入6位房间号" maxlength="6">
+    <button class="btn btn-primary" onclick="joinRoom()">加入房间</button>
+  </div>
+</div>
+
+<!-- 游戏页 -->
+<div id="page-game" class="page">
+  <div class="room-header">
+    <div class="room-id" id="room-id-display">房间: ------</div>
+    <div class="points-badge" id="my-points">1000分</div>
+  </div>
+
+  <div class="players-area" id="players-area"></div>
+
+  <div class="cards-area" id="my-cards"></div>
+
+  <div class="game-info" id="game-info">
+    <div class="pot-display" id="pot-display">奖池: 0</div>
+    <div class="bet-display" id="bet-display">当前注额: 0</div>
+    <div class="turn-display" id="turn-display"></div>
+  </div>
+
+  <div class="actions" id="actions-area"></div>
+
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-header" onclick="toggleChat()">
+      <span>💬 聊天</span><span id="chat-toggle">▼</span>
+    </div>
+    <div class="chat-msgs" id="chat-msgs" style="display:none"></div>
+    <div class="chat-input-row" id="chat-input-row" style="display:none">
+      <input id="chat-input" placeholder="说点什么..." maxlength="200" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="btn btn-primary btn-sm" onclick="sendChat()">发</button>
+    </div>
+  </div>
+
+  <div class="disclaimer" style="margin-top:auto">⚠️ 仅供娱乐，禁止赌博！</div>
+</div>
+
+<!-- 比牌选择浮层 -->
+<div class="compare-overlay" id="compare-overlay">
+  <div class="compare-panel">
+    <div style="font-size:16px;color:var(--gold);font-weight:bold;margin-bottom:8px">选择比牌对手</div>
+    <div class="compare-list" id="compare-list"></div>
+    <button class="btn btn-danger btn-sm" onclick="cancelCompare()">取消</button>
+  </div>
+</div>
+
+<!-- 比牌结果浮层 -->
+<div class="compare-result-overlay" id="compare-result-overlay">
+  <div class="cr-panel">
+    <div class="cr-title">⚔️ 比牌结果</div>
+    <div class="cr-hands" id="cr-hands"></div>
+    <div id="cr-result-text"></div>
+    <button class="btn btn-primary btn-sm" style="margin-top:12px" onclick="closeCompareResult()">确定</button>
+  </div>
+</div>
+
+<!-- 游戏结束浮层 -->
+<div class="game-end-overlay" id="game-end-overlay">
+  <div class="ge-panel">
+    <div class="ge-title">🏆 本局结束</div>
+    <div id="ge-winner-info"></div>
+    <div id="ge-pot-info"></div>
+    <div class="ge-cards" id="ge-cards"></div>
+    <button class="btn btn-gold" style="margin-top:12px" onclick="closeGameEnd()">确定</button>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+const socket = io({ transports: ['websocket', 'polling'] });
+let myId = '';
+let myName = '';
+let currentRoomId = null;
+let roomState = null;
+let chatOpen = false;
+
+// ========== 页面切换 ==========
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+}
+
+function enterLobby() {
+  myName = document.getElementById('input-name').value.trim() || '匿名玩家';
+  myId = socket.id;
+  showPage('lobby');
+}
+
+// ========== 创建/加入房间 ==========
+function createRoom() {
+  const ante = parseInt(document.getElementById('input-ante').value) || 10;
+  socket.emit('createRoom', ante, (res) => {
+    if (res && res.roomId) {
+      currentRoomId = res.roomId;
+      showPage('game');
+    }
+  });
+}
+
+function joinRoom() {
+  const rid = document.getElementById('input-room-id').value.trim();
+  if (!/^\d{6}$/.test(rid)) { alert('请输入6位数字房间号'); return; }
+  socket.emit('joinRoom', rid, (res) => {
+    if (res && res.error) {
+      alert(res.error);
+    } else if (res && res.success) {
+      currentRoomId = rid;
+      showPage('game');
+    }
+  });
+}
+
+// ========== 游戏操作 ==========
+function startGame() { socket.emit('startGame'); }
+function doLook() { socket.emit('action', 'look'); }
+function doCall() { socket.emit('action', 'call'); }
+function doRaise() { socket.emit('action', 'raise'); }
+function doFold() { socket.emit('action', 'fold'); }
+function doCompare() { showComparePanel(); }
+function cancelCompare() { document.getElementById('compare-overlay').classList.remove('show'); }
+
+function showComparePanel() {
+  if (!roomState) return;
+  const list = document.getElementById('compare-list');
+  list.innerHTML = '';
+  const me = roomState.players.find(p => p.id === myId);
+  roomState.players.forEach(p => {
+    if (p.id === myId || p.folded || !p.connected) return;
+    const btn = document.createElement('button');
+    btn.className = 'btn btn-primary btn-sm';
+    btn.textContent = `${p.name} (${p.points}分 ${p.looked ? '明' : '暗'})`;
+    btn.onclick = () => {
+      socket.emit('action', 'compare', { targetId: p.id });
+      document.getElementById('compare-overlay').classList.remove('show');
+    };
+    list.appendChild(btn);
+  });
+  document.getElementById('compare-overlay').classList.add('show');
+}
+
+function closeCompareResult() {
+  document.getElementById('compare-result-overlay').classList.remove('show');
+}
+
+function closeGameEnd() {
+  document.getElementById('game-end-overlay').classList.remove('show');
+}
+
+// ========== 聊天 ==========
+function toggleChat() {
+  chatOpen = !chatOpen;
+  const d = chatOpen ? 'block' : 'none';
+  document.getElementById('chat-msgs').style.display = d;
+  document.getElementById('chat-input-row').style.display = d;
+  document.getElementById('chat-toggle').textContent = chatOpen ? '▲' : '▼';
+}
+
+function sendChat() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (msg) {
+    socket.emit('chat', msg);
+    input.value = '';
+  }
+}
+
+// ========== 渲染 ==========
+function cardHTML(card, flipped) {
+  if (!card) return '<div class="card"><div class="card-back"></div></div>';
+  const isRed = card.suit === '♥' || card.suit === '♦';
+  const colorClass = isRed ? 'red' : 'black';
+  return `<div class="card ${flipped ? 'flipped' : ''}">
+    <div class="card-back"></div>
+    <div class="card-front ${colorClass}">
+      <div class="card-rank">${card.rank}</div>
+      <div class="card-suit">${card.suit}</div>
+    </div>
+  </div>`;
+}
+
+function renderRoom(state) {
+  roomState = state;
+  if (!state) return;
+
+  document.getElementById('room-id-display').textContent = '房间: ' + state.id;
+
+  const me = state.players.find(p => p.id === myId);
+  if (me) document.getElementById('my-points').textContent = me.points + '分';
+
+  // 玩家区
+  const pa = document.getElementById('players-area');
+  pa.innerHTML = '';
+  state.players.forEach(p => {
+    const isMe = p.id === myId;
+    const isActive = p.isCurrentTurn;
+    let statusCls = 'blind', statusText = '暗牌';
+    if (p.folded) { statusCls = 'fold-s'; statusText = '已弃牌'; }
+    else if (p.looked) { statusCls = 'looked'; statusText = '明牌'; }
+    pa.innerHTML += `<div class="player-card ${isActive ? 'active-turn' : ''} ${p.folded ? 'folded' : ''} ${isMe ? 'is-you' : ''}">
+      <div class="p-name">${p.name}${isMe ? '(你)' : ''}</div>
+      <div class="p-points">💰${p.points}</div>
+      <div class="p-status ${statusCls}">${statusText}</div>
+      <div class="p-bet">下注: ${p.totalBet}</div>
+    </div>`;
+  });
+
+  // 我的牌
+  const mc = document.getElementById('my-cards');
+  mc.innerHTML = '';
+  if (me && me.cards && me.cards.length === 3) {
+    const showCards = me.looked || (!state.gameStarted);
+    me.cards.forEach((c, i) => {
+      mc.innerHTML += cardHTML(c, showCards);
+    });
+  } else if (state.gameStarted && me && !me.folded) {
+    mc.innerHTML = '<div style="color:var(--dim);font-size:13px">👉 点击"看牌"查看手牌</div>';
+  }
+
+  // 游戏信息
+  document.getElementById('pot-display').textContent = '💰 奖池: ' + state.pot;
+  document.getElementById('bet-display').textContent = '当前注额: ' + state.currentBet;
+
+  const curP = state.players[state.currentPlayerIndex];
+  if (state.gameStarted && curP) {
+    const isMyTurn = curP.id === myId;
+    document.getElementById('turn-display').textContent = isMyTurn ? '🎯 轮到你了！' : `⏳ 等待 ${curP.name} 操作...`;
+  } else if (!state.gameStarted) {
+    document.getElementById('turn-display').textContent = '等待开始...';
+  }
+
+  // 操作按钮
+  const aa = document.getElementById('actions-area');
+  aa.innerHTML = '';
+  if (!state.gameStarted) {
+    const isHost = state.host === myId;
+    if (isHost) {
+      const aliveCount = state.players.filter(p => p.connected && p.points > 0).length;
+      aa.innerHTML = `<button class="btn btn-gold" onclick="startGame()" ${aliveCount < 2 ? 'disabled' : ''}>开始游戏 (需≥2人)</button>`;
+    } else {
+      aa.innerHTML = '<div style="color:var(--dim);font-size:13px">等待房主开始游戏...</div>';
+    }
+  } else if (me && !me.folded && me.isCurrentTurn && me.cards.length === 3) {
+    if (!me.looked) aa.innerHTML += '<button class="btn btn-primary btn-sm" onclick="doLook()">👁 看牌</button>';
+    const callCost = me.looked ? state.currentBet * 2 : state.currentBet;
+    aa.innerHTML += `<button class="btn btn-success btn-sm" onclick="doCall()">跟注 ${callCost}</button>`;
+    if (state.currentBet < 200) {
+      const raiseCost = me.looked ? state.currentBet * 4 : state.currentBet * 2;
+      aa.innerHTML += `<button class="btn btn-gold btn-sm" onclick="doRaise()">加注 ${raiseCost}</button>`;
+    }
+    const activeOthers = state.players.filter(p => p.id !== myId && !p.folded && p.connected);
+    if (activeOthers.length > 0) {
+      aa.innerHTML += '<button class="btn btn-primary btn-sm" onclick="doCompare()">⚔️ 比牌</button>';
+    }
+    aa.innerHTML += '<button class="btn btn-danger btn-sm" onclick="doFold()">🏳 弃牌</button>';
+  } else if (me && !me.folded && !me.isCurrentTurn && state.gameStarted) {
+    aa.innerHTML = '<div style="color:var(--dim);font-size:13px">等待其他玩家操作...</div>';
+  } else if (me && me.folded && state.gameStarted) {
+    aa.innerHTML = '<div style="color:var(--dim);font-size:13px">你已弃牌，等待本局结束</div>';
+  }
+}
+
+// ========== Socket事件 ==========
+socket.on('connect', () => {
+  myId = socket.id;
+  if (myName) socket.emit('setName', myName);
+});
+
+socket.on('roomState', (state) => {
+  renderRoom(state);
+});
+
+socket.on('gameEnd', (result) => {
+  const panel = document.getElementById('game-end-overlay');
+  const winnerInfo = document.getElementById('ge-winner-info');
+  const potInfo = document.getElementById('ge-pot-info');
+  const cardsDiv = document.getElementById('ge-cards');
+
+  if (result.winner) {
+    winnerInfo.innerHTML = `🎉 <b>${result.winner.name}</b> 获胜！`;
+  }
+  potInfo.innerHTML = `💰 奖池: <b>${result.pot}</b> 分`;
+
+  cardsDiv.innerHTML = '';
+  result.allCards.forEach(p => {
+    let cardsHtml = '';
+    if (p.cards && p.cards.length === 3) {
+      p.cards.forEach(c => {
+        const isRed = c.suit === '♥' || c.suit === '♦';
+        cardsHtml += `<span class="ge-pr-card ${isRed ? 'red' : 'black'}">${c.suit}${c.rank}</span>`;
+      });
+    }
+    cardsDiv.innerHTML += `<div class="ge-player-row ${p.folded ? 'folded-row' : ''}">
+      <span class="ge-pr-name">${p.name}</span>
+      <span class="ge-pr-cards">${cardsHtml}</span>
+      <span class="ge-pr-type">${p.hand ? p.hand.typeName : ''}${p.folded ? '(弃)' : ''}</span>
+    </div>`;
+  });
+
+  panel.classList.add('show');
+});
+
+socket.on('compareResult', (data) => {
+  const panel = document.getElementById('compare-result-overlay');
+  const handsDiv = document.getElementById('cr-hands');
+  const resultText = document.getElementById('cr-result-text');
+
+  const renderHand = (p, isWinner) => {
+    let cardsHtml = '';
+    if (p.cards) p.cards.forEach(c => {
+      const isRed = c.suit === '♥' || c.suit === '♦';
+      cardsHtml += `<span class="ge-pr-card ${isRed ? 'red' : 'black'}" style="font-size:14px">${c.suit}${c.rank}</span>`;
+    });
+    return `<div class="cr-hand ${!isWinner ? 'cr-loser' : ''}">
+      <div class="crh-name">${p.name}</div>
+      <div>${cardsHtml}</div>
+      <div class="crh-type">${p.hand ? p.hand.typeName : ''}</div>
+    </div>`;
+  };
+
+  const isChallengerWin = data.winnerId === data.challenger.id;
+  handsDiv.innerHTML = renderHand(data.challenger, isChallengerWin) + renderHand(data.target, !isChallengerWin);
+  resultText.innerHTML = `<div class="cr-winner">🎉 ${isChallengerWin ? data.challenger.name : data.target.name} 胜！</div>`;
+
+  panel.classList.add('show');
+  setTimeout(() => { if (panel.classList.contains('show')) panel.classList.remove('show'); }, 3000);
+});
+
+socket.on('gameMessage', (msg) => {
+  addSysMsg(msg.text);
+});
+
+socket.on('errorMessage', (msg) => {
+  alert(msg);
+});
+
+socket.on('chat', (msg) => {
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="chat-msg"><span class="cn">${msg.name}:</span> ${escHtml(msg.text)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+});
+
+function addSysMsg(text) {
+  const msgs = document.getElementById('chat-msgs');
+  msgs.innerHTML += `<div class="chat-msg" style="color:var(--gold)">📢 ${escHtml(text)}</div>`;
+  msgs.scrollTop = msgs.scrollHeight;
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// 初始化：如果已连接
+if (socket.connected) {
+  myId = socket.id;
+}
+</script>
+</body>
+</html>
