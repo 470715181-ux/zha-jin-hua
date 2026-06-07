@@ -75,7 +75,7 @@ input{width:100%;max-width:320px;padding:11px 14px;border:2px solid #4a3070;bord
 <div class="dc">⚠️ 仅供娱乐，禁止赌博!</div>
 <input id="i0" placeholder="输入昵称" maxlength="10" autofocus>
 <button class="bt bg" onclick="go()">进入大厅</button>
-<div class="sp" id="setup" style="display:none">
+<div class="sp" id="setup" style="display:none;border:2px solid var(--ac);box-shadow:0 0 15px rgba(255,107,53,0.3)">
 <h3>🔧 配置 Firebase</h3>
 <p>免费实时通信，<b>永久免费</b>，无需绑卡</p>
 <div class="stp"><b>1</b>:打开<a href="https://console.firebase.google.com" target="_blank">Firebase控制台</a>，Google登录</div>
@@ -174,10 +174,10 @@ function paste(){
 }
 function rst(){if(confirm('确定重置?')){localStorage.removeItem('zjh');location.reload()}}
 function ini(o){
-  try{if(firebase.apps.length)firebase.apps.forEach(function(a){a.delete()});firebase.initializeApp(o);db=firebase.database();ok=true;
-  document.getElementById('setup').style.display='none';pg(1);return true}catch(e){alert('Firebase失败:'+e.message);return false}
+  try{if(typeof firebase==='undefined'){alert('Firebase SDK未加载!请检查网络');return false}if(firebase.apps.length)firebase.apps.forEach(function(a){a.delete()});firebase.initializeApp(o);db=firebase.database();ok=true;
+  document.getElementById('setup').style.display='none';pg(1);return true}catch(e){alert('Firebase连接失败:\n'+e.message+'\n\n请检查配置是否正确');return false}
 }
-function go(){myn=document.getElementById('i0').value.trim()||'匿名';var c=gc();if(c&&c.apiKey&&c.databaseURL)ini(c);else document.getElementById('setup').style.display='block'}
+function go(){myn=document.getElementById('i0').value.trim()||'匿名';if(window._fbFail||typeof firebase==='undefined'){alert('⚠️ Firebase SDK加载失败!\n\n可能原因：gstatic.com 被网络拦截\n解决方案：\n1. 开VPN/梯子后刷新页面\n2. 或修改DNS为 8.8.8.8\n3. 或联系我提供国内镜像');return}var c=gc();if(c&&c.apiKey&&c.databaseURL){ini(c)}else{document.getElementById('setup').style.display='block';document.getElementById('setup').scrollIntoView({behavior:'smooth'})}}
 
 function op(rm){return Object.entries(rm.p).filter(function(e){return e[1].on}).sort(function(a,b){return a[1].la-b[1].la||a[0].localeCompare(b[0])}).map(function(e){return e[0]})}
 function pv(rm){return rm.p?Object.values(rm.p):[]}
