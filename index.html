@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>炸金花</title>
-<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);color:#fff;min-height:100vh;overflow-x:hidden}
@@ -177,6 +177,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;b
 </div>
 <div class="toast" id="toast"></div>
 
+
+<script>
+function loadPeerJS(cb){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/peerjs@1.5.4/dist/peerjs.min.js';s.onload=cb;s.onerror=function(){console.warn('jsdelivr failed, trying unpkg...');var s2=document.createElement('script');s2.src='https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js';s2.onload=cb;s2.onerror=function(){alert('无法加载 PeerJS，请检查网络或使用VPN');};document.head.appendChild(s2);};document.head.appendChild(s);}
+var _peerReady=false;loadPeerJS(function(){_peerReady=true;if(typeof _onPeerReady==='function')_onPeerReady();});
+</script>
 <script>"use strict";
 var RK=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 var SU=['♠','♥','♦','♣'];
@@ -195,6 +200,7 @@ function isRed(c){return c.s==='♥'||c.s==='♦'}
 
 // ===== PeerJS =====
 function initPeer(peerId,callback){
+  if(typeof Peer==='undefined'){toast('PeerJS加载中，请稍后重试');return;}
   peer=new Peer(peerId,{debug:0});
   peer.on('open',function(id){
     myId=id;
