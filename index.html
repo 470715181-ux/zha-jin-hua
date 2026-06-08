@@ -44,10 +44,12 @@ body{font-family:-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei
 .sts{font-size:9px;padding:1px 5px;border-radius:3px;margin-top:1px;color:#fff}
 .sts.lk{background:rgba(52,152,219,.6)}.sts.fl{background:rgba(231,76,60,.6)}.sts.off{background:rgba(100,100,100,.6)}
 .hb2{position:absolute;top:-5px;right:-5px;background:var(--gold);color:#2c3e50;font-size:7px;font-weight:800;padding:1px 4px;border-radius:4px}
-.p0{bottom:8px;left:50%;transform:translateX(-50%)}.p1{bottom:36%;left:6%}.p2{top:6%;left:50%;transform:translateX(-50%)}
+.p0{bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.35);padding:8px 12px;border-radius:12px}.p1{bottom:36%;left:6%}.p2{top:6%;left:50%;transform:translateX(-50%)}
 .p3{top:36%;right:6%}.p4{top:6%;right:6%}.p5{bottom:36%;right:6%}
 .cds{display:flex;gap:2px;margin-top:3px}
-.mc{width:44px;height:60px;border-radius:6px;position:relative;cursor:pointer;transition:transform .15s;flex-shrink:0}
+.mc{width:54px;height:74px;border-radius:7px;position:relative;cursor:pointer;transition:transform .15s;flex-shrink:0}
+.mf .rk{font-size:22px}.mf .su{font-size:18px}
+.mf .co{font-size:8px}.mf .cb{font-size:8px}
 .mc:active{transform:scale(.95)}
 .mf{position:absolute;inset:0;border-radius:6px;background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.35);display:flex;flex-direction:column;align-items:center;justify-content:center}
 .mf.rd{color:var(--red)}.mf.bk{color:#2c3e50}
@@ -159,7 +161,7 @@ function shf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+
 function eH(c){var s=c.slice().sort(function(a,b){return RK.indexOf(b.r)-RK.indexOf(a.r)});var f=s[0].s===s[1].s&&s[1].s===s[2].s,st=false,hi=0;var v=[RK.indexOf(s[0].r),RK.indexOf(s[1].r),RK.indexOf(s[2].r)];if(v[0]-v[1]===1&&v[1]-v[2]===1){st=true;hi=v[0]}if(s[0].r==='A'&&s[1].r==='2'&&s[2].r==='3'){st=true;hi=3}var tr=s[0].r===s[1].r&&s[1].r===s[2].r,pr=false,pp=0,kk=0;if(!tr){if(s[0].r===s[1].r){pr=true;pp=v[0];kk=v[2]}else if(s[1].r===s[2].r){pr=true;pp=v[1];kk=v[0]}else if(s[0].r===s[2].r){pr=true;pp=v[0];kk=v[1]}}if(tr)return{tp:6,nm:'豹子',cs:s};if(f&&st)return{tp:5,nm:'同花顺',hi:hi,cs:s};if(f)return{tp:4,nm:'同花',cs:s};if(st)return{tp:3,nm:'顺子',hi:hi,cs:s};if(pr)return{tp:2,nm:'对子',pp:pp,kk:kk,cs:s};return{tp:1,nm:'散牌',cs:s}}
 function cH(a,b){var ha=eH(a),hb=eH(b);if(ha.tp!==hb.tp)return ha.tp>hb.tp?1:-1;if(ha.tp===5||ha.tp===3)return ha.hi>hb.hi?1:ha.hi<hb.hi?-1:-1;if(ha.tp===2){if(ha.pp!==hb.pp)return ha.pp>hb.pp?1:-1;if(ha.kk!==hb.kk)return ha.kk>hb.kk?1:-1;return -1}for(var i=0;i<3;i++){var va=RK.indexOf(ha.cs[i].r),vb=RK.indexOf(hb.cs[i].r);if(va!==vb)return va>vb?1:-1}return -1}
 function aPs(){return G.ps.filter(function(p){return p.on&&!p.fd})}
-function startGame(){if(!mh())return;var ap=aPs();if(ap.length<2){toast('至少2人');return}if(atm){clearInterval(atm);atm=null;document.getElementById('ncd').classList.remove('on')}G.st='play';G.rnd++;G.dk=shf(mDk());G.pot=0;G.bet=ANTE;G.ps.forEach(function(p){if(!p.on){p.fd=true;return}p.cd=[G.dk.pop(),G.dk.pop(),G.dk.pop()];p.lk=false;p.fd=false;p.bt=0});var al=aPs();G.tn=al[Math.floor(Math.random()*al.length)].id;bc({t:'bc',g:G,msg:'第'+G.rnd+'局！'});bS();rd();sTmr()}
+function startGame(){if(!mh())return;var ap=aPs();if(ap.length<2){toast('至少2人');return}if(atm){clearInterval(atm);atm=null;document.getElementById('ncd').classList.remove('on')}G.st='play';G.rnd++;G.dk=shf(mDk());G.pot=0;G.bet=ANTE;G.ps.forEach(function(p){if(!p.on){p.fd=true;return}p.cd=[G.dk.pop(),G.dk.pop(),G.dk.pop()];p.lk=false;p.fd=false;p.bt=0});var al=aPs();G.tn=al[Math.floor(Math.random()*al.length)].id;bc({t:'bc',g:G,msg:'第'+G.rnd+'局！'});sL();bS();rd();sTmr()}
 function nxtT(){if(!mh())return;var ap=aPs();if(ap.length<=1){eRnd();return}var ids=ap.map(function(p){return p.id});var ix=ids.indexOf(G.tn);ix=(ix+1)%ids.length;G.tn=ids[ix];bc({t:'bc',g:G});sTmr();rd()}
 function sTmr(){if(tmr)clearInterval(tmr);tL=TS;tmr=setInterval(function(){tL--;if(tL<=0){clearInterval(tmr);if(mh()&&G&&G.tn)hAct(G.tn,'fold')}},1000)}
 function hAct(pid,act){if(!mh())return;var i=sOf(pid);if(i<0)return;var p=G.ps[i];if(p.fd)return;if(act==='look'){p.lk=true;bc({t:'bc',g:G});bS();rd();return}if(act==='call'){var co=p.lk?G.bet*2:G.bet;if(p.ch<co)co=p.ch;p.ch-=co;p.bt+=co;G.pot+=co}else if(act==='raise'){G.bet=Math.min(G.bet*2,200);var co=p.lk?G.bet*2:G.bet;if(p.ch<co)co=p.ch;p.ch-=co;p.bt+=co;G.pot+=co}else if(act==='fold'){p.fd=true;syC(p.n+' 弃牌');if(aPs().length<=1){eRnd();return}}if(aPs().length<=1){eRnd();return}bc({t:'bc',g:G});nxtT()}
