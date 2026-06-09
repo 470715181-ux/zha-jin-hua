@@ -1,59 +1,134 @@
-# 🃏 炸金花 - 多人实时在线游戏
+# 🃏 炸金花 - 多人在线对战
 
-好友娱乐专属，⚠️ 仅供娱乐，禁止赌博！
+> 浏览器直接玩，无需服务器，朋友打开链接就能加入！
+> ⚠️ **仅供娱乐 · 禁止赌博**
 
-## 快速开始（局域网）
+🎮 **在线试玩**: https://470715181-ux.github.io/zha-jin-hua/
 
-```bash
-npm install
-node server.js
+---
+
+## ✨ 功能特性
+
+### 🎯 核心玩法
+- **6位房间号**，房主创建后分享链接即可
+- 最多 **6 人同时在线**
+- 完整炸金花规则：看牌、跟注、加注、弃牌、比牌
+- **加注金额可选**（1x / 2x / 3x / 5x 当前注额）
+- 牌型：豹子 > 同花顺 > 同花 > 顺子 > 对子 > 散牌
+
+### 🏆 庄家系统
+- 首局：房主为庄家
+- 之后：**赢家成为新庄家**
+- 庄家最后行动（信息优势）
+- 头像金色"庄"标记 + 红色"房主"标记
+
+### 💎 筹码系统
+- **自定义初始筹码**（100 - 100000，房主决定）
+- 每局自动扣除底注（默认 10）
+- 每位玩家座位显示"本轮+XX"已投入筹码
+- 实时显示个人剩余筹码
+
+### 🚪 灵活加入
+- **首批玩家**：直接加入房间
+- **中途加入**：需房主审核同意
+- 离线玩家自动标记，房主可继续游戏
+
+### 🎨 优秀的体验
+- 当前回合玩家头像**金色光圈 + 旋转圆环 + 名字变金**
+- 弃牌玩家清空牌面，显示醒目"✕ 弃牌"
+- 闷牌🂠 / 明牌👁 / 弃牌✕ 三种状态彩色徽章
+- 结算画面赢家行金色高亮，显示牌型
+- 30秒回合倒计时，超时自动弃牌
+- 全员确认后自动开始下一局
+
+---
+
+## 🔧 技术架构
+
+| 组件 | 说明 |
+|------|------|
+| **架构** | 纯 P2P，无后端服务器 |
+| **通信** | [PeerJS](https://peerjs.com/) (WebRTC 数据通道) |
+| **托管** | GitHub Pages 静态托管 |
+| **前端** | 原生 HTML/CSS/JavaScript，无框架 |
+| **入口** | 单文件 `index.html`（HTML+CSS+JS 全部内联） |
+
+**优势**：完全免费、无需服务器、上传到 GitHub Pages 即可使用、消息直接在玩家之间传递不经过任何服务器。
+
+---
+
+## 🚀 快速开始（自己部署）
+
+### 1. Fork 此仓库
+点右上角 **Fork** 按钮复制到你的账户
+
+### 2. 启用 GitHub Pages
+- 进入仓库 **Settings** → **Pages**
+- Source 选 **Deploy from a branch**
+- Branch 选 **master** / 目录选 **/ (root)**
+- 保存后等待几分钟，访问 `https://你的用户名.github.io/zha-jin-hua/`
+
+### 3. 把链接发给朋友
+朋友打开链接 → 输入昵称 → 输入房间号加入 → 开玩！
+
+---
+
+## 📁 项目结构
+
+```
+zha-jin-hua/
+├── index.html          # 最终游戏文件（合并后，部署用）
+├── part1.html          # HTML 结构 + CSS 样式
+├── part2.html          # JavaScript 游戏逻辑
+├── combine.js          # 合并 part1+part2 → index.html
+└── upload5.js          # 通过 GitHub API 上传到仓库
 ```
 
-访问 http://localhost:3000
-
-## 永久外网访问（推荐）
-
-### 步骤 1: 创建 GitHub 仓库
-1. 打开 https://github.com/new
-2. 仓库名: `zha-jin-hua`
-3. 选 Public
-4. 点 Create repository
-
-### 步骤 2: 推送代码
+### 开发流程
 ```bash
-cd C:\zha
-git init
-echo node_modules/ > .gitignore
-echo cloudflared.exe >> .gitignore
-echo cf.exe >> .gitignore
-echo "*.log" >> .gitignore
-git add .
-git commit -m "initial"
-git remote add origin https://github.com/你的用户名/zha-jin-hua.git
-git push -u origin main
+# 修改 part1.html 或 part2.html 后
+node combine.js          # 生成 index.html
+# 浏览器打开 index.html 测试
+node upload5.js          # 上传到 GitHub Pages
 ```
 
-### 步骤 3: 部署到 Render.com（免费）
-1. 打开 https://render.com 注册/登录（可以用GitHub账号）
-2. 点 "New" → "Web Service"
-3. 连接刚才的 GitHub 仓库
-4. 设置:
-   - Build Command: `npm install`
-   - Start Command: `node server.js`
-5. 点 "Create Web Service"
-6. 等几分钟部署完成 → 得到永久链接 `https://xxx.onrender.com`
+---
 
-### 🎉 把链接发给朋友就能玩了！
+## 🎮 游戏规则速查
 
-## 游戏规则
-- 6位数字房间号，最多6人
-- 初始1000积分，底注5-100分
-- 闷牌（暗牌）下注=当前注额，明牌下注=当前注额×2
-- 比牌时平局 → 挑战者输
-- 牌型大小: 豹子 > 同花顺 > 同花 > 顺子 > 对子 > 散牌
-- 最长30轮自动摊牌
+| 操作 | 说明 |
+|------|------|
+| **看牌** | 把暗牌变为明牌（看到自己的牌） |
+| **闷牌跟注** | 不看牌跟注 = 当前注额 |
+| **明牌跟注** | 看牌后跟注 = 当前注额 × 2 |
+| **加注** | 可选 1x / 2x / 3x / 5x（上限 200） |
+| **弃牌** | 放弃本局，损失已下注的筹码 |
+| **比牌** | 与指定对手比，输的人出局 |
 
-## 技术栈
-- Node.js + Express
-- Socket.io (WebSocket实时通信)
-- 纯HTML/CSS/JS前端
+**胜负规则**：
+- 比牌平局 → 挑战者输（鼓励主动比牌）
+- 牌型：豹子(三张相同) > 同花顺 > 同花 > 顺子 > 对子 > 散牌
+- 同牌型比点数：A最大，特殊顺子 A-2-3 算最小顺子
+
+---
+
+## ⚠️ 已知限制
+
+- PeerJS 默认信令服务器 `0.peerjs.com` 在国内连接不稳定，少数情况可能连不上
+- 房主下线后会自动迁移（next online player 接管）
+- 需要现代浏览器支持 WebRTC（Chrome 80+ / Edge / Safari 14+ / Firefox 75+）
+
+---
+
+## 📜 许可证
+
+MIT License — 自由使用、修改、分发
+
+## 🙏 致谢
+
+- [PeerJS](https://peerjs.com/) - 极简的 WebRTC 库
+- 所有参与测试的朋友们
+
+---
+
+⚠️ **再次声明：本游戏仅供朋友娱乐，禁止用于任何赌博行为！**
