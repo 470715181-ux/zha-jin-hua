@@ -165,7 +165,9 @@ function pInit(cb){
 function pJoinChannel(roomCode,onReady){
   if(pusherChannel){try{pusher.unsubscribe(pusherChannel.name)}catch(e){}}
   pusherChannel=pusher.subscribe('zjh-'+roomCode);
-  pusherChannel.bind('msg',function(d){
+  pusherChannel.bind('msg',function(e){
+    var d;
+    try{d=JSON.parse(e.data)}catch(err){d=e.data}
     if(d&&d._from===myId)return;
     if(d&&d._to&&d._to!==myId)return;
     oM(d,d._from||'unknown');
