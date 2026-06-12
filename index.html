@@ -196,26 +196,32 @@ function pJoinChannel(roomCode,onReady){
   });
 }
 
+function b64UrlEncode(str){
+  var b=btoa(unescape(encodeURIComponent(str)));
+  return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+}
 function pSend(msgData){
-  if(!rC){syC('[pSend] WARN: no rC, skip');return}
+  if(!rC){syC('[pSend] WARN: no rC');return}
   syC('[发]'+msgData.t+(msgData.n?' n='+msgData.n:''));
   msgData._from=myId;
-  var payload=JSON.stringify({channel:'zjh-'+rC,event:'msg',data:msgData});
+  var ch='zjh-'+rC;
+  var dB64=b64UrlEncode(JSON.stringify(msgData));
+  // 注意:b64 url-safe 也得换回标准 base64 给 Worker atob
+  var dStdB64=dB64.replace(/-/g,'+').replace(/_/g,'/');
+  while(dStdB64.length%4)dStdB64+='=';
+  var url=WORKER_URL+'/gsend?ch='+encodeURIComponent(ch)+'&d='+encodeURIComponent(dStdB64);
   function trySend(attempt){
     syC('[pSend] try #'+attempt);
     var done=false;
     var timeoutId=setTimeout(function(){
       if(done)return;
       done=true;
-      syC('[pSend] TIMEOUT after 5s');
+      syC('[pSend] TIMEOUT 5s');
       if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
     },5000);
-    
-    // 用 XMLHttpRequest 替代 fetch，iOS Safari 兼容性更好
     try{
       var xhr=new XMLHttpRequest();
-      xhr.open('POST',WORKER_URL+'/send',true);
-      // 不设任何 header,让请求变成 simple request, 避免 iOS Safari 预检
+      xhr.open('GET',url,true);
       xhr.timeout=5000;
       xhr.onreadystatechange=function(){
         if(xhr.readyState!==4)return;
@@ -224,13 +230,15 @@ function pSend(msgData){
         clearTimeout(timeoutId);
         syC('[pSend] HTTP '+xhr.status);
         if(xhr.status===0){
-          syC('[pSend] status=0 网络阻断');
+          syC('[pSend] status=0 阻断');
+          // 备用: 用 <img> 触发，img 是 simple GET 永不被拦
+          try{var im=new Image();im.src=url+'&_t='+Date.now();syC('[pSend] img fallback')}catch(e){}
           if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
           return;
         }
         var txt=xhr.responseText||'';
-        syC('[pSend] got: '+txt.substring(0,100));
-        if(txt.indexOf('"ok":true')>=0)return;
+        if(txt.indexOf('"ok":true')>=0){syC('[pSend] OK');return}
+        syC('[pSend] not ok: '+txt.substring(0,80));
         if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
       };
       xhr.ontimeout=function(){
@@ -238,6 +246,7 @@ function pSend(msgData){
         done=true;
         clearTimeout(timeoutId);
         syC('[pSend] xhr timeout');
+        try{var im=new Image();im.src=url+'&_t='+Date.now();syC('[pSend] img fallback')}catch(e){}
         if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
       };
       xhr.onerror=function(){
@@ -245,13 +254,15 @@ function pSend(msgData){
         done=true;
         clearTimeout(timeoutId);
         syC('[pSend] xhr error');
+        try{var im=new Image();im.src=url+'&_t='+Date.now();syC('[pSend] img fallback')}catch(e){}
         if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
       };
-      xhr.send(payload);
+      xhr.send();
     }catch(e){
       done=true;
       clearTimeout(timeoutId);
-      syC('[pSend] xhr throw: '+e.message);
+      syC('[pSend] throw: '+e.message);
+      try{var im=new Image();im.src=url+'&_t='+Date.now();syC('[pSend] img fallback')}catch(e2){}
       if(attempt<3){setTimeout(function(){trySend(attempt+1)},500)}
     }
   }
