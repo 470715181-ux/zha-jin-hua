@@ -197,18 +197,31 @@ function pJoinChannel(roomCode,onReady){
 }
 
 function pSend(msgData){
-  if(!rC){return}
+  if(!rC){syC('[pSend] WARN: no rC, skip');return}
   syC('[发]'+msgData.t+(msgData.n?' n='+msgData.n:''));
   msgData._from=myId;
   var payload=JSON.stringify({channel:'zjh-'+rC,event:'msg',data:msgData});
   function trySend(attempt){
+    syC('[pSend] try #'+attempt);
     fetch(WORKER_URL+'/send',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:payload})
-    .then(function(r){return r.text()})
-    .then(function(txt){
-      if(txt.indexOf('"ok":true')>=0)return;
-      if(attempt<3){setTimeout(function(){trySend(attempt+1)},1000)}
+    .then(function(r){
+      syC('[pSend] HTTP '+r.status);
+      return r.text();
     })
-    .catch(function(e){if(attempt<3){setTimeout(function(){trySend(attempt+1)},1000)}});
+    .then(function(txt){
+      syC('[pSend] got: '+txt.substring(0,100));
+      if(txt.indexOf('"ok":true')>=0)return;
+      if(attempt<3){
+        syC('[pSend] not ok, retry #'+(attempt+1));
+        setTimeout(function(){trySend(attempt+1)},1000);
+      }
+    })
+    .catch(function(e){
+      syC('[pSend] ERR: '+(e.message||String(e)));
+      if(attempt<3){
+        setTimeout(function(){trySend(attempt+1)},1000);
+      }
+    });
   }
   trySend(1);
 }
