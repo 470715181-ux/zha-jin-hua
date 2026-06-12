@@ -165,11 +165,12 @@ function pInit(cb){
   pusher=new Pusher(PUSHER_KEY,{cluster:PUSHER_CLUSTER,forceTLS:true});
   pusher.connection.bind('connected',function(){
     if(!myId)myId='c_'+Math.random().toString(36).substring(2,12);
+    syC('Pusher已连接 socket='+pusher.connection.socket_id);
     
     if(cb)cb();
   });
-  pusher.connection.bind('error',function(e){console.error('Pusher err',e)});
-  pusher.connection.bind('state_change',function(s){
+  pusher.connection.bind('error',function(e){console.error('Pusher err',e);syC('❌ Pusher错误:'+(e.error?e.error.data?e.error.data.message:e.error.message:'unknown'))});
+  pusher.connection.bind('state_change',function(s){syC('状态:'+s.previous+'→'+s.current);
     if(s.current==='connected'&&s.previous!=='connected'&&G&&!isH){
       setTimeout(function(){if(G&&!isH)pSend({t:'reqSync',n:myN,from:myId})},500);
     }
@@ -178,7 +179,7 @@ function pInit(cb){
 
 function pJoinChannel(roomCode,onReady){
   if(pusherChannel){try{pusher.unsubscribe(pusherChannel.name)}catch(e){}}
-  pusherChannel=pusher.subscribe('zjh-'+roomCode);
+  pusherChannel=pusher.subscribe('zjh-'+roomCode);pusherChannel.bind('pusher:subscription_error',function(s){syC('❌ 订阅失败 status='+(s&&s.status||'unknown'))});
   pusherChannel.bind('msg',function(data){
     
     var d;
@@ -189,7 +190,7 @@ function pJoinChannel(roomCode,onReady){
     
     oM(d,d._from||'unknown');
   });
-  pusherChannel.bind('pusher:subscription_succeeded',function(){
+  pusherChannel.bind('pusher:subscription_succeeded',function(){syC('订阅成功 channel='+roomCode);
     
     if(onReady)onReady();
   });
