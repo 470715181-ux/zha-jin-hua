@@ -161,10 +161,51 @@ var PUSHER_CLUSTER='ap1';
 var WORKER_URL='https://zha-jin-hua-relay.470715181.workers.dev';
 var pusher=null,pusherChannel=null;
 
+
+// === Pusher Client Events Auth (browser-side, no server) ===
+var PUSHER_SECRET_CE='3d698a6bf2884d2ade00';
+
+function ceBytesToHex(buf){
+  var arr=new Uint8Array(buf);
+  var hex='';
+  for(var i=0;i<arr.length;i++){
+    var h=arr[i].toString(16);
+    if(h.length<2)h='0'+h;
+    hex+=h;
+  }
+  return hex;
+}
+
+async function ceHmacHex(key,msg){
+  var enc=new TextEncoder();
+  var keyObj=await crypto.subtle.importKey('raw',enc.encode(key),{name:'HMAC',hash:'SHA-256'},false,['sign']);
+  var sig=await crypto.subtle.sign('HMAC',keyObj,enc.encode(msg));
+  return ceBytesToHex(sig);
+}
+
+// 自定义 Pusher authorizer：本地算签名，不发 HTTP
+function makeLocalAuthorizer(channel){
+  return {
+    authorize:function(socketId,callback){
+      var stringToSign=socketId+':'+channel.name;
+      ceHmacHex(PUSHER_SECRET_CE,stringToSign).then(function(sig){
+        callback(null,{auth:PUSHER_KEY+':'+sig});
+      }).catch(function(e){
+        callback(new Error('local auth fail: '+e.message),null);
+      });
+    }
+  };
+}
+
 function pInit(cb){
   if(pusher&&pusher.connection.state==='connected'){if(cb)cb();return}
   if(typeof Pusher==='undefined'){toast('Pusher SDK未加载');return}
-  pusher=new Pusher(PUSHER_KEY,{cluster:PUSHER_CLUSTER,forceTLS:true});
+  pusher=new Pusher(PUSHER_KEY,{cluster:PUSHER_CLUSTER,forceTLS:true,channelAuthorization:{customHandler:function(params,callback){
+    var stringToSign=params.socketId+':'+params.channelName;
+    ceHmacHex(PUSHER_SECRET_CE,stringToSign).then(function(sig){
+      callback(null,{auth:PUSHER_KEY+':'+sig});
+    }).catch(function(e){callback(new Error('local auth fail: '+e.message),null)});
+  }}});
   pusher.connection.bind('connected',function(){
     if(!myId)myId='c_'+Math.random().toString(36).substring(2,12);
     syC('Pusher已连接 socket='+pusher.connection.socket_id);
@@ -181,8 +222,9 @@ function pInit(cb){
 
 function pJoinChannel(roomCode,onReady){
   if(pusherChannel){try{pusher.unsubscribe(pusherChannel.name)}catch(e){}}
-  pusherChannel=pusher.subscribe('zjh-'+roomCode);pusherChannel.bind('pusher:subscription_error',function(s){syC('❌ 订阅失败 status='+(s&&s.status||'unknown'))});
-  pusherChannel.bind('msg',function(data){
+  pusherChannel=pusher.subscribe('private-zjh-'+roomCode);pusherChannel.bind('pusher:subscription_error',function(s){syC('❌ 订阅失败 status='+(s&&s.status||'unknown'))});
+  // 同时监听 'msg'(server推送) 和 'client-msg'(客户端triggered)
+  function _onMsg(data){
     
     var d;
     if(typeof data==='string'){try{d=JSON.parse(data)}catch(err){return}}else{d=data}
@@ -191,7 +233,9 @@ function pJoinChannel(roomCode,onReady){
     if(d._to&&d._to!==myId){return}
     
     oM(d,d._from||'unknown');
-  });
+  }
+  pusherChannel.bind('msg',_onMsg);
+  pusherChannel.bind('client-msg',_onMsg);
   pusherChannel.bind('pusher:subscription_succeeded',function(){syC('订阅成功 channel='+roomCode);
     
     if(onReady)onReady();
@@ -203,31 +247,48 @@ function b64UrlEncode(str){
   return b.replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 }
 function pSend(msgData){
-  if(!rC){syC('[pSend] WARN: no rC, skip');return}
+  if(!rC){syC('[pSend] no rC');return}
+  if(!pusherChannel||!pusher||pusher.connection.state!=='connected'){
+    syC('[pSend] WS not ready, retry 500ms');
+    setTimeout(function(){pSend(msgData)},500);
+    return;
+  }
   syC('[发]'+msgData.t+(msgData.n?' n='+msgData.n:''));
   msgData._from=myId;
-  var payload=JSON.stringify({channel:'zjh-'+rC,event:'msg',data:msgData});
+  // 优先用 client-msg WebSocket 直发（手机也能用，不依赖 Worker）
+  try{
+    var ok=pusherChannel.trigger('client-msg',msgData);
+    if(ok){syC('[pSend] WS OK')}
+    else{syC('[pSend] WS denied,fallback Worker');pSendViaWorker(msgData);}
+  }catch(e){
+    syC('[pSend] WS err: '+e.message+', fallback Worker');
+    pSendViaWorker(msgData);
+  }
+}
+
+function pSendViaWorker(msgData){
+  if(!rC)return;
+  var payload=JSON.stringify({channel:'private-zjh-'+rC,event:'msg',data:msgData});
   function trySend(attempt){
-    syC('[pSend] try #'+attempt);
-    fetch(WORKER_URL+'/send',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:payload})
-    .then(function(r){
-      syC('[pSend] HTTP '+r.status);
-      return r.text();
-    })
-    .then(function(txt){
-      syC('[pSend] got: '+txt.substring(0,100));
-      if(txt.indexOf('"ok":true')>=0)return;
-      if(attempt<3){
-        syC('[pSend] not ok, retry #'+(attempt+1));
-        setTimeout(function(){trySend(attempt+1)},1000);
-      }
-    })
-    .catch(function(e){
-      syC('[pSend] ERR: '+(e.message||String(e)));
-      if(attempt<3){
-        setTimeout(function(){trySend(attempt+1)},1000);
-      }
-    });
+    var done=false;
+    var to=setTimeout(function(){
+      if(done)return;done=true;
+      syC('[Worker] TIMEOUT 5s');
+      if(attempt<2)setTimeout(function(){trySend(attempt+1)},500);
+    },5000);
+    try{
+      var xhr=new XMLHttpRequest();
+      xhr.open('POST',WORKER_URL+'/send',true);
+      xhr.timeout=5000;
+      xhr.onreadystatechange=function(){
+        if(xhr.readyState!==4||done)return;
+        done=true;clearTimeout(to);
+        syC('[Worker] HTTP '+xhr.status);
+      };
+      xhr.ontimeout=function(){if(done)return;done=true;clearTimeout(to);if(attempt<2)setTimeout(function(){trySend(attempt+1)},500)};
+      xhr.onerror=function(){if(done)return;done=true;clearTimeout(to);if(attempt<2)setTimeout(function(){trySend(attempt+1)},500)};
+      xhr.send(payload);
+    }catch(e){done=true;clearTimeout(to);}
   }
   trySend(1);
 }
