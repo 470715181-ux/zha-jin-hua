@@ -215,7 +215,7 @@ function pSend(msgData){
     try{
       var xhr=new XMLHttpRequest();
       xhr.open('POST',WORKER_URL+'/send',true);
-      xhr.setRequestHeader('Content-Type','text/plain;charset=UTF-8');
+      // 不设任何 header,让请求变成 simple request, 避免 iOS Safari 预检
       xhr.timeout=5000;
       xhr.onreadystatechange=function(){
         if(xhr.readyState!==4)return;
