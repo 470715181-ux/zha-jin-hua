@@ -202,7 +202,7 @@ function pSend(msgData){
   msgData._from=myId;
   var payload=JSON.stringify({channel:'zjh-'+rC,event:'msg',data:msgData});
   function trySend(attempt){
-    fetch(WORKER_URL+'/send',{method:'POST',headers:{'Content-Type':'application/json'},body:payload})
+    fetch(WORKER_URL+'/send',{method:'POST',headers:{'Content-Type':'text/plain;charset=UTF-8'},body:payload})
     .then(function(r){return r.text()})
     .then(function(txt){
       if(txt.indexOf('"ok":true')>=0)return;
