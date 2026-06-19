@@ -394,7 +394,7 @@ function sendJoinRetry(){
   pSend({t:'wake',from:myId});
   pSend({t:'join',n:myN,from:myId});
   if(_joinTries===2)startReqSyncLoop();
-  syC('发送加入请求('+_joinTries+'/8)');
+  syC('发送加入请求('+_joinTries+'/8)');if(_joinTries>=2)toast('网络较慢,重试 '+_joinTries+'/8');
   if(_joinTmr)clearTimeout(_joinTmr);
   _joinTmr=setTimeout(sendJoinRetry,_joinTries===1?800:2000);
 }
