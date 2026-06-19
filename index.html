@@ -320,7 +320,63 @@ async function reacquireWakeLock(){
   await requestWakeLock();
 }
 
-var lastPong={};function startHB(){if(hbTmr)clearInterval(hbTmr);if(!lastPong)lastPong={};hbTmr=setInterval(function(){if(!G||!pusher||pusher.connection.state!=='connected')return;if(mh()){if(!document.hidden)bc({t:'ping',ts:Date.now()})}else{if(!document.hidden)pSend({t:'pong',ts:Date.now()});if(!lastPong['__host__'])lastPong['__host__']=Date.now();var hostSilent=Date.now()-lastPong['__host__'];if(hostSilent>120000){syC('房主连接异常,自动接管中...');tryTakeoverHost()}}var now=Date.now();if(mh()&&G&&G.ps){var changed=false;G.ps.forEach(function(p){if(p.id===myId)return;if(!lastPong[p.id])lastPong[p.id]=now;if(now-lastPong[p.id]>180000&&p.on){p.on=false;changed=true;syC(p.n+' 长时间未响应,标记离线')}else if(now-lastPong[p.id]<30000&&!p.on){p.on=true;changed=true;syC(p.n+' 已重连')}});if(changed){bc({t:'bc',g:G});bS();rd();sL()}}},10000)}
+var lastPong={};function startHB(){
+  if(hbTmr)clearInterval(hbTmr);
+  if(!lastPong)lastPong={};
+  // 心跳每 30 秒一次（标准做法）
+  hbTmr=setInterval(function(){
+    // 关键修复1: WebSocket 连接状态是真实依据
+    if(!pusher)return;
+    var connState=pusher.connection.state;
+    
+    // 如果 WebSocket 断了，主动重连，不发心跳也不判定离线
+    if(connState==='disconnected'||connState==='failed'||connState==='unavailable'){
+      try{pusher.connect()}catch(e){}
+      return;
+    }
+    if(connState!=='connected')return;
+    if(!G)return;
+    
+    // 后台时跳过发送，但保持等待
+    if(document.hidden)return;
+    
+    // 房主发 ping，玩家发 pong（轻量级保活，告诉对方"我活着"）
+    if(mh()){
+      bc({t:'ping',ts:Date.now()})
+    }else{
+      pSend({t:'pong',ts:Date.now()});
+      if(!lastPong['__host__'])lastPong['__host__']=Date.now();
+    }
+    
+    // 关键修复2: 只在房主明确"长时间无响应"时才考虑接管
+    // 阈值: 5 分钟 (足够长，避免误判)
+    var now=Date.now();
+    if(!mh()){
+      var hostSilent=now-lastPong['__host__'];
+      if(hostSilent>300000){
+        syC('房主长时间未响应,尝试接管');
+        tryTakeoverHost()
+      }
+    }
+    
+    // 关键修复3: 房主端不主动标记其他玩家"离线"
+    // 玩家是否在线由 WebSocket 连接状态推断（如果 Pusher 还推送他的消息，他就活着）
+    // 这里只在【极端情况】下标记: 5 分钟+ 完全无消息
+    if(mh()&&G.ps){
+      var changed=false;
+      G.ps.forEach(function(p){
+        if(p.id===myId)return;
+        if(!lastPong[p.id])lastPong[p.id]=now;
+        var silent=now-lastPong[p.id];
+        // 5 分钟 (300秒) 无任何消息才标记离线（极保守）
+        if(silent>300000&&p.on){p.on=false;changed=true;syC(p.n+' 长时间无响应')}
+        // 收到任何消息都恢复在线
+        else if(silent<60000&&!p.on){p.on=true;changed=true;syC(p.n+' 已恢复在线')}
+      });
+      if(changed){bc({t:'bc',g:G});bS();rd();sL()}
+    }
+  },30000) // 30 秒心跳间隔
+}
 function hostIsOffline(){if(!G)return false;if(mh())return false;var hp=G.ps.find(function(p){return p.id===G.h});if(!hp)return true;if(!hp.on)return true;return false;}
 function tryAutoTakeover(){if(!G)return false;if(mh())return true;if(!hostIsOffline())return false;var online=G.ps.filter(function(p){return p.on&&p.id!==G.h}).sort(function(a,b){return (a.s||0)-(b.s||0)});if(online.length>0&&online[0].id===myId){G.h=myId;isH=true;syC('我已自动成为新房主');if(lastPong)lastPong['__host__']=Date.now();bc({t:'sync',g:G});return true}return false}
 function tryTakeoverHost(){if(!G||mh())return;var online=G.ps.filter(function(p){return p.on}).sort(function(a,b){return (a.s||0)-(b.s||0)});if(online.length===0)return;if(online[0].id===myId){G.h=myId;isH=true;syC('我已成为新房主');bc({t:'bc',g:G});lastPong['__host__']=Date.now()}}
@@ -435,6 +491,51 @@ function toggleSound(){soundOn=!soundOn;try{localStorage.setItem('zjh_sound',sou
 function confirmLeave(){if(!G){pg('home');return}var msg=mh()?'你是房主，离开后房间将解散。确定离开？':'确定退出房间？积分将丢失。';if(confirm(msg)){doLeave()}}
 function doLeave(){if(G&&!mh()){try{sH({t:'leave',n:myN})}catch(e){}}else if(G&&mh()){try{bc({t:'host-leave'})}catch(e){}}setTimeout(function(){lvRoom()},200)}
 
-document.addEventListener('visibilitychange',function(){if(document.hidden)return;reacquireWakeLock();if(!G)return;if(pusher&&pusher.connection.state!=='connected'){try{pusher.connect()}catch(e){}}if(!isH){setTimeout(function(){if(G&&!isH&&pusher&&pusher.connection.state==='connected'){pSend({t:'pong',ts:Date.now()});pSend({t:'reqSync',n:myN,from:myId});toast('🔄 已重新连接')}},800)}else{if(lastPong)lastPong={'__host__':Date.now()};G.ps.forEach(function(p){if(lastPong)lastPong[p.id]=Date.now()});toast('🔄 已回到游戏')}});function tryRestoreConnection(){if(!G)return;if(!peer){doFullReconnect();return}if(peer.disconnected&&!peer.destroyed){toast('恢复连接中...');try{peer.reconnect()}catch(e){doFullReconnect()}return}if(peer.destroyed){doFullReconnect();return}for(var k in conns){if(!conns[k]||!conns[k].open){if(isH){syC('检测到与某玩家连接断开');delete conns[k]}else if(k===G.h){doFullReconnect();return}}}}function doFullReconnect(){if(!G)return;toast('正在重新连接...');if(isH){var rc=rC;var oldPs=G.ps;var oldG=JSON.parse(JSON.stringify(G));if(peer){try{peer.destroy()}catch(e){}peer=null}conns={};lastPong={};setTimeout(function(){iPeer('zjh-'+rc,function(){G=oldG;G.h=myId;for(var i=0;i<G.ps.length;i++){if(G.ps[i].n===myN){G.ps[i].id=myId;G.ps[i].on=true;G.ps[i].archived=false;break}}isH=true;syC('房主重新连接');bS();rd();sL();toast('房主已恢复，等待玩家重连...')})},300)}else{var oldH=G.h,oldN=myN;var oldG2=JSON.parse(JSON.stringify(G));if(peer){try{peer.destroy()}catch(e){}peer=null}conns={};lastPong={};setTimeout(function(){iPeer('zjh-g'+uid(8),function(){toast('正在重连...');cTo(oldH,function(){sTo(oldH,{t:'join',n:oldN});toast('重连请求已发送')})})},300)}}window.addEventListener('online',function(){if(peer&&peer.disconnected&&!peer.destroyed){toast('网络恢复');try{peer.reconnect()}catch(e){}}});window.addEventListener('beforeunload',function(){if(G){try{if(mh()){bc({t:'host-leave'})}else{sH({t:'leave',n:myN})}}catch(e){}}});window.addEventListener('offline',function(){toast('网络断开')});window.onload=function(){var sb=document.getElementById('bSnd');if(sb)sb.textContent=soundOn?'🔊':'🔇';(function(){var s=document.createElement('style');s.textContent='.st.offlinePlayer .cds{opacity:.3;filter:blur(1px)}.st.offlinePlayer .sts.off{animation:fldPls 1s infinite}';document.head.appendChild(s)})();setTimeout(function(){toast('v8 加载')},500);document.getElementById('i0').focus();var p=new URLSearchParams(location.search);var r=p.get('r');if(r){document.getElementById('i2').value=r.toUpperCase();toast('房间 '+r);setTimeout(function(){document.getElementById('i2').focus()},500)}};
+document.addEventListener('visibilitychange',function(){
+  if(document.hidden){
+    // 切到后台：记录时间，便于回前台时判断是否需要全量同步
+    window.__hiddenAt=Date.now();
+    return;
+  }
+  reacquireWakeLock();
+  if(!G)return;
+  
+  // 切回前台：先重连 WebSocket（如果断了）
+  if(pusher){
+    var st=pusher.connection.state;
+    if(st!=='connected'){
+      try{pusher.connect()}catch(e){}
+    }
+  }
+  
+  // 重置所有 lastPong 时间，避免误判
+  var nw=Date.now();
+  if(lastPong){
+    lastPong['__host__']=nw;
+    if(G&&G.ps)G.ps.forEach(function(p){lastPong[p.id]=nw});
+  }
+  
+  // 计算后台时长
+  var hiddenMs=window.__hiddenAt?(nw-window.__hiddenAt):0;
+  window.__hiddenAt=null;
+  
+  if(!isH){
+    // 玩家：立即发 pong + 请求同步（如果离开超过 30 秒）
+    setTimeout(function(){
+      if(!G||!pusher||pusher.connection.state!=='connected')return;
+      pSend({t:'pong',ts:nw});
+      if(hiddenMs>30000){
+        pSend({t:'reqSync',n:myN,from:myId});
+        toast('🔄 已重新连接');
+      }
+    },500)
+  }else{
+    // 房主：广播一次 sync（让玩家更新最新状态）
+    if(hiddenMs>30000){
+      setTimeout(function(){if(G&&mh())bc({t:'sync',g:G})},500);
+      toast('🔄 已回到游戏');
+    }
+  }
+});function tryRestoreConnection(){if(!G)return;if(!peer){doFullReconnect();return}if(peer.disconnected&&!peer.destroyed){toast('恢复连接中...');try{peer.reconnect()}catch(e){doFullReconnect()}return}if(peer.destroyed){doFullReconnect();return}for(var k in conns){if(!conns[k]||!conns[k].open){if(isH){syC('检测到与某玩家连接断开');delete conns[k]}else if(k===G.h){doFullReconnect();return}}}}function doFullReconnect(){if(!G)return;toast('正在重新连接...');if(isH){var rc=rC;var oldPs=G.ps;var oldG=JSON.parse(JSON.stringify(G));if(peer){try{peer.destroy()}catch(e){}peer=null}conns={};lastPong={};setTimeout(function(){iPeer('zjh-'+rc,function(){G=oldG;G.h=myId;for(var i=0;i<G.ps.length;i++){if(G.ps[i].n===myN){G.ps[i].id=myId;G.ps[i].on=true;G.ps[i].archived=false;break}}isH=true;syC('房主重新连接');bS();rd();sL();toast('房主已恢复，等待玩家重连...')})},300)}else{var oldH=G.h,oldN=myN;var oldG2=JSON.parse(JSON.stringify(G));if(peer){try{peer.destroy()}catch(e){}peer=null}conns={};lastPong={};setTimeout(function(){iPeer('zjh-g'+uid(8),function(){toast('正在重连...');cTo(oldH,function(){sTo(oldH,{t:'join',n:oldN});toast('重连请求已发送')})})},300)}}window.addEventListener('online',function(){if(peer&&peer.disconnected&&!peer.destroyed){toast('网络恢复');try{peer.reconnect()}catch(e){}}});window.addEventListener('beforeunload',function(){if(G){try{if(mh()){bc({t:'host-leave'})}else{sH({t:'leave',n:myN})}}catch(e){}}});window.addEventListener('offline',function(){toast('网络断开')});window.onload=function(){var sb=document.getElementById('bSnd');if(sb)sb.textContent=soundOn?'🔊':'🔇';(function(){var s=document.createElement('style');s.textContent='.st.offlinePlayer .cds{opacity:.3;filter:blur(1px)}.st.offlinePlayer .sts.off{animation:fldPls 1s infinite}';document.head.appendChild(s)})();setTimeout(function(){toast('v8 加载')},500);document.getElementById('i0').focus();var p=new URLSearchParams(location.search);var r=p.get('r');if(r){document.getElementById('i2').value=r.toUpperCase();toast('房间 '+r);setTimeout(function(){document.getElementById('i2').focus()},500)}};
 </script>
 </body></html
