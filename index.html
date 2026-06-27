@@ -368,9 +368,13 @@ var lastPong={};function startHB(){
         if(p.id===myId)return;
         if(!lastPong[p.id])lastPong[p.id]=now;
         var silent=now-lastPong[p.id];
-        // 5 分钟 (300秒) 无任何消息才标记离线（极保守）
+        // 等待开局阶段：不因静默判离线。手机锁屏/切微信会暂停 JS，误判率很高；开局时统一恢复在线。
+        if(G.st==='wait'){
+          if(!p.on){p.on=true;changed=true;syC(p.n+' 等待中恢复在线')}
+          return;
+        }
+        // 游戏进行中才做极保守离线判定：5 分钟无任何消息。
         if(silent>300000&&p.on){p.on=false;changed=true;syC(p.n+' 长时间无响应')}
-        // 收到任何消息都恢复在线
         else if(silent<60000&&!p.on){p.on=true;changed=true;syC(p.n+' 已恢复在线')}
       });
       if(changed){bc({t:'bc',g:G});bS();rd();sL()}
@@ -414,7 +418,7 @@ function shf(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+
 function eH(c){var s=c.slice().sort(function(a,b){return RK.indexOf(b.r)-RK.indexOf(a.r)});var f=s[0].s===s[1].s&&s[1].s===s[2].s,st=false,hi=0;var v=[RK.indexOf(s[0].r),RK.indexOf(s[1].r),RK.indexOf(s[2].r)];if(v[0]-v[1]===1&&v[1]-v[2]===1){st=true;hi=v[0]}if(s[0].r==='A'&&s[1].r==='2'&&s[2].r==='3'){st=true;hi=3}var tr=s[0].r===s[1].r&&s[1].r===s[2].r,pr=false,pp=0,kk=0;if(!tr){if(s[0].r===s[1].r){pr=true;pp=v[0];kk=v[2]}else if(s[1].r===s[2].r){pr=true;pp=v[1];kk=v[0]}else if(s[0].r===s[2].r){pr=true;pp=v[0];kk=v[1]}}if(tr)return{tp:6,nm:'豹子',cs:s};if(f&&st)return{tp:5,nm:'同花顺',hi:hi,cs:s};if(f)return{tp:4,nm:'同花',cs:s};if(st)return{tp:3,nm:'顺子',hi:hi,cs:s};if(pr)return{tp:2,nm:'对子',pp:pp,kk:kk,cs:s};return{tp:1,nm:'散牌',cs:s}}
 function cH(a,b){var ha=eH(a),hb=eH(b);if(ha.tp!==hb.tp)return ha.tp>hb.tp?1:-1;if(ha.tp===5||ha.tp===3)return ha.hi>hb.hi?1:ha.hi<hb.hi?-1:-1;if(ha.tp===2){if(ha.pp!==hb.pp)return ha.pp>hb.pp?1:-1;if(ha.kk!==hb.kk)return ha.kk>hb.kk?1:-1;return -1}for(var i=0;i<3;i++){var va=RK.indexOf(ha.cs[i].r),vb=RK.indexOf(hb.cs[i].r);if(va!==vb)return va>vb?1:-1}return -1}
 function aPs(){return G.ps.filter(function(p){return p.on&&!p.fd&&!p.archived})}
-function startGame(){if(!mh())return;G.ps.forEach(function(p){if(p.on)p.fd=false});var ap=aPs();if(ap.length<2){toast('至少2人');return}if(atm){clearInterval(atm);atm=null;document.getElementById('ncd').classList.remove('on')}G.st='play';G.rnd++;G.rdy=[];G.dk=shf(mDk());G.pot=0;G.bet=ANTE;var dealtPlayers=0;G.ps.forEach(function(p){if(!p.on){p.fd=true;return}p.cd=[G.dk.pop(),G.dk.pop(),G.dk.pop()];p.lk=false;p.fd=false;p.bt=ANTE;p.ch-=ANTE;G.pot+=ANTE;dealtPlayers++});var al=aPs();var di=-1;for(var k=0;k<al.length;k++)if(al[k].id===G.dl){di=k;break};if(di<0)di=0;G.tn=al[(di+1)%al.length].id;playSound('deal');bc({t:'bc',g:G,msg:'第'+G.rnd+'局！'});sL();bS();rd();sTmr();var rp=document.getElementById('rPanel');if(rp)rp.remove()}
+function startGame(){if(!mh())return;G.ps.forEach(function(p){if(!p.archived){p.on=true;p.fd=false}});var ap=aPs();if(ap.length<2){toast('至少2人');return}if(atm){clearInterval(atm);atm=null;document.getElementById('ncd').classList.remove('on')}G.st='play';G.rnd++;G.rdy=[];G.dk=shf(mDk());G.pot=0;G.bet=ANTE;var dealtPlayers=0;G.ps.forEach(function(p){if(!p.on){p.fd=true;return}p.cd=[G.dk.pop(),G.dk.pop(),G.dk.pop()];p.lk=false;p.fd=false;p.bt=ANTE;p.ch-=ANTE;G.pot+=ANTE;dealtPlayers++});var al=aPs();var di=-1;for(var k=0;k<al.length;k++)if(al[k].id===G.dl){di=k;break};if(di<0)di=0;G.tn=al[(di+1)%al.length].id;playSound('deal');bc({t:'bc',g:G,msg:'第'+G.rnd+'局！'});sL();bS();rd();sTmr();var rp=document.getElementById('rPanel');if(rp)rp.remove()}
 function nxtT(){if(!mh())return;var ap=aPs();if(ap.length<=1){eRnd();return}var ids=ap.map(function(p){return p.id});var ix=ids.indexOf(G.tn);ix=(ix+1)%ids.length;G.tn=ids[ix];bc({t:'bc',g:G});sTmr();rd()}
 function speak(text){try{if('speechSynthesis' in window){var u=new SpeechSynthesisUtterance(text);u.lang='zh-CN';u.rate=1.2;u.volume=0.8;speechSynthesis.speak(u)}}catch(e){}}
 function sTmr(){if(tmr)clearInterval(tmr);tL=TS;var lastSpoken=0;tmr=setInterval(function(){if(document.hidden)return;tL--;if(tL===20&&G&&G.tn===myId){speak('请尽快操作');playSound('warn');toast('20秒后自动弃牌')}else if(tL===10&&G&&G.tn===myId){speak('还有10秒');playSound('warn');toast('10秒后自动弃牌')}else if(tL<=5&&tL>0&&G&&G.tn===myId){playSound('tick')}if(tL<=0){clearInterval(tmr);if(mh()&&G&&G.tn)hAct(G.tn,'fold')}},1000)}
